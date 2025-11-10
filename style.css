@@ -1,0 +1,382 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); /* Fondo vibrante */
+    color: #eee;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Ajustado para mejor visualización en pantallas grandes */
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.container {
+    background-color: #282c34; /* Fondo oscuro casi negro */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    border: 3px solid #fdbb2d; /* Borde dorado/naranja */
+}
+
+.title {
+    font-family: 'Press Start 2P', cursive;
+    color: #fdbb2d;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+.subtitle {
+    font-size: 1.1em;
+    color: #ccc;
+    margin-top: -5px;
+    margin-bottom: 25px;
+}
+
+h2 {
+    font-family: 'Press Start 2P', cursive;
+    color: #fdbb2d;
+    font-size: 1.5em;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Player Info */
+.player-info {
+    background-color: #3a3f47;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    border: 1px solid #555;
+}
+
+.level-display {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.level-number {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.8em;
+    color: #4CAF50; /* Verde de vida/salud */
+}
+
+.level-title {
+    font-size: 1.2em;
+    color: #fdbb2d;
+}
+
+.xp-bar-container {
+    background-color: #555;
+    border-radius: 5px;
+    height: 25px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #777;
+}
+
+.xp-bar-fill {
+    height: 100%;
+    width: 0%; /* Se controla con JS */
+    background: linear-gradient(to right, #4CAF50, #8bc34a); /* Degradado verde */
+    transition: width 0.5s ease-in-out;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.xp-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    line-height: 25px; /* Centrar verticalmente */
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* Quest Input */
+.quest-input {
+    background-color: #3a3f47;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    border: 1px solid #555;
+}
+
+#new-quest-text {
+    width: calc(100% - 20px);
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 2px solid #fdbb2d;
+    border-radius: 8px;
+    background-color: #444;
+    color: #eee;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+#new-quest-text::placeholder {
+    color: #bbb;
+}
+
+.difficulty-buttons {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+}
+
+.btn-difficulty {
+    flex: 1;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    font-size: 0.9em;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.btn-difficulty.easy { background-color: #4CAF50; } /* Verde */
+.btn-difficulty.medium { background-color: #FFC107; } /* Naranja */
+.btn-difficulty.hard { background-color: #F44336; } /* Rojo */
+
+.btn-difficulty:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+.btn-difficulty:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* Quest List */
+.quest-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.quest-item {
+    background-color: #3a3f47;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 1px solid #555;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.quest-item.completed {
+    background-color: #444951;
+    text-decoration: line-through;
+    color: #aaa;
+    opacity: 0.7;
+}
+
+.quest-item span {
+    flex-grow: 1;
+    text-align: left;
+    margin-right: 10px;
+}
+
+.complete-quest-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+.complete-quest-btn:hover {
+    background-color: #66BB6A;
+}
+
+.quest-item.completed .complete-quest-btn {
+    background-color: #616161; /* Gris oscuro para botón completado */
+    cursor: not-allowed;
+}
+
+/* Trophies */
+.trophy-display {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.trophy-item {
+    background-color: #444951;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    width: 120px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+    border: 1px solid #666;
+    position: relative;
+    overflow: hidden;
+}
+
+.trophy-item::before { /* Brillo de fondo */
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+}
+
+.trophy-item.unlocked {
+    border-color: #fdbb2d; /* Borde dorado al desbloquear */
+    background-color: #383d44;
+}
+.trophy-item.unlocked::before {
+    opacity: 1;
+}
+
+.trophy-icon {
+    font-size: 2.5em;
+    margin-bottom: 8px;
+    color: #888; /* Color inicial gris para bloqueados */
+    transition: color 0.3s;
+}
+.trophy-item.unlocked .trophy-icon {
+    color: #FFD700; /* Oro para desbloqueados */
+}
+
+.trophy-name {
+    font-weight: bold;
+    color: #eee;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.trophy-desc {
+    font-size: 0.8em;
+    color: #bbb;
+}
+
+/* Modal */
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed; /* Posición fija en la pantalla */
+    z-index: 1; /* Por encima de todo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Habilitar scroll si es necesario */
+    background-color: rgba(0,0,0,0.8); /* Fondo oscuro semitransparente */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #282c34;
+    margin: auto;
+    padding: 40px;
+    border: 3px solid #fdbb2d;
+    border-radius: 15px;
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.7);
+}
+
+.modal-content h2 {
+    font-family: 'Press Start 2P', cursive;
+    color: #fdbb2d;
+    font-size: 2.2em;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+.modal-content h3 {
+    color: #4CAF50;
+    font-size: 1.8em;
+    margin-bottom: 15px;
+}
+
+.modal-content p {
+    color: #eee;
+    font-size: 1.1em;
+    margin-bottom: 30px;
+}
+
+#modal-new-level, #modal-new-title {
+    font-weight: bold;
+    color: #fdbb2d;
+}
+
+.modal .close-button {
+    background-color: #fdbb2d;
+    color: #282c34;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    margin-top: 20px;
+}
+
+.modal .close-button:hover {
+    background-color: #e0a800;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+        margin: 10px;
+    }
+    .title {
+        font-size: 1.8em;
+    }
+    h2 {
+        font-size: 1.2em;
+    }
+    .level-number {
+        font-size: 1.5em;
+    }
+    .level-title {
+        font-size: 1em;
+    }
+    .btn-difficulty {
+        padding: 10px 10px;
+        font-size: 0.8em;
+    }
+    .difficulty-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .modal-content {
+        padding: 30px;
+    }
+    .modal-content h2 {
+        font-size: 1.8em;
+    }
+    .modal-content h3 {
+        font-size: 1.4em;
+    }
+}
