@@ -1,474 +1,198 @@
-/* ESTILOS ANTERIORES (VAN AQUÍ) ... */
-body {
-    font-family: 'Roboto', sans-serif;
-    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-    color: #eee;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    box-sizing: border-box;
-}
+/* =========================================================================
+   NUEVO TEMA: "CUTE & PASTEL"
+   ========================================================================= */
 
-.container {
-    background-color: #282c34;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+/* --- FUENTES Y RESET BÁSICO --- */
+body { font-family: 'Nunito', sans-serif; background-color: #FFFBF5; color: #444; margin: 0; padding-bottom: 80px; }
+h1, h2 { font-family: 'Nunito', sans-serif; font-weight: 900; color: #333; margin-top: 0; }
+h1 { font-size: 2.2em; }
+h2 { font-size: 1.5em; color: #555; margin-bottom: 15px; }
+h3 { font-family: 'Nunito', sans-serif; font-weight: 900; color: #333; margin-top: 0; }
+input[type="email"], input[type="password"], input[type="text"], input[type="number"], select {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1em;
     width: 100%;
-    max-width: 600px;
-    text-align: center;
-    border: 3px solid #fdbb2d;
-}
-
-.title {
-    font-family: 'Press Start 2P', cursive;
-    color: #fdbb2d;
-    font-size: 2.5em;
-    margin-bottom: 10px;
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
-}
-
-.subtitle {
-    font-size: 1.1em;
-    color: #ccc;
-    margin-top: -5px;
-    margin-bottom: 25px;
-}
-
-h2 {
-    font-family: 'Press Start 2P', cursive;
-    color: #fdbb2d;
-    font-size: 1.5em;
-    margin-top: 30px;
-    margin-bottom: 15px;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-/* Player Info */
-.player-info {
-    background-color: #3a3f47;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    border: 1px solid #555;
-}
-
-.level-display {
-    display: flex;
-    justify-content: center;
-    align-items: baseline;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.level-number {
-    font-family: 'Press Start 2P', cursive;
-    font-size: 1.8em;
-    color: #4CAF50;
-}
-
-.level-title {
-    font-size: 1.2em;
-    color: #fdbb2d;
-}
-
-.xp-bar-container {
-    background-color: #555;
-    border-radius: 5px;
-    height: 25px;
-    overflow: hidden;
-    position: relative;
-    border: 1px solid #777;
-}
-
-.xp-bar-fill {
-    height: 100%;
-    width: 0%; 
-    background: linear-gradient(to right, #4CAF50, #8bc34a);
-    transition: width 0.5s ease-in-out;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-.xp-text {
-    position: absolute;
-    width: 100%;
-    text-align: center;
-    line-height: 25px;
-    color: #fff;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-}
-
-/* Quest Input */
-.quest-input {
-    background-color: #3a3f47;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    border: 1px solid #555;
-}
-
-#new-quest-text {
-    width: calc(100% - 20px);
     padding: 12px;
     margin-bottom: 15px;
-    border: 2px solid #fdbb2d;
-    border-radius: 8px;
-    background-color: #444;
-    color: #eee;
-    font-size: 1em;
-    box-sizing: border-box;
+    border: 2px solid #EEE;
+    border-radius: 10px;
+    background-color: #FAFAFA;
+    box-sizing: border-box; 
 }
-#new-quest-text::placeholder {
-    color: #bbb;
+input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus, input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: #A7D8F9; 
 }
-
-.difficulty-buttons {
-    display: flex;
-    justify-content: space-around;
-    gap: 10px;
-}
-
-.btn-difficulty {
-    flex: 1;
-    padding: 12px 15px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
+label {
+    font-weight: 700;
     font-size: 0.9em;
-    color: #fff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    color: #777;
+    display: block;
+    margin-bottom: 5px;
 }
+select:disabled { background-color: #F0F0F0; color: #999; }
 
-.btn-difficulty.easy { background-color: #4CAF50; } 
-.btn-difficulty.medium { background-color: #FFC107; } 
-.btn-difficulty.hard { background-color: #F44336; } 
+/* --- BOTONES --- */
+button { font-family: 'Nunito', sans-serif; font-weight: 700; cursor: pointer; border: none; border-radius: 10px; padding: 12px 15px; transition: transform 0.1s; }
+button:active { transform: scale(0.98); }
 
-.btn-difficulty:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-.btn-difficulty:active {
-    transform: translateY(0);
-    box-shadow: none;
-}
+/* --- ESTRUCTURA PRINCIPAL --- */
+.container { width: 100%; max-width: 600px; margin: 0 auto; padding: 15px; box-sizing: border-box; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.page-header h1 { margin-bottom: 0; font-size: 2em; }
+.card { background-color: #FFFFFF; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06); }
 
-/* Quest List */
-.quest-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+/* --- SECCIÓN DE AUTENTICACIÓN (LOGIN) --- */
+.auth-section { max-width: 400px; margin: 50px auto; text-align: center; }
+.auth-section h1 { color: #FAD1E6; font-size: 3em; }
+.auth-buttons { display: flex; gap: 10px; margin-top: 10px; }
+.auth-buttons button { flex: 1; font-size: 1em; color: #fff; }
+#login-btn { background-color: #A7D8F9; }
+#signup-btn { background-color: #C2F0C2; color: #333; }
+#auth-message { margin-top: 15px; color: #F44336; }
 
-.quest-item {
-    background-color: #3a3f47;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    border: 1px solid #555;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
+/* --- PERFIL PEQUEÑO (PÁGINA HOME) --- */
+.player-info-small { display: flex; align-items: center; gap: 15px; padding: 10px 15px; }
+.player-info-small .level-number { font-size: 1.2em; font-weight: 900; color: #C2F0C2; background-color: #F0F0F0; padding: 5px 10px; border-radius: 8px; }
+.player-info-small .xp-bar-container { flex: 1; height: 15px; }
+.player-info-small .xp-text { line-height: 15px; font-size: 0.7em; }
 
-.quest-item.completed {
-    background-color: #444951;
-    text-decoration: line-through;
-    color: #aaa;
-    opacity: 0.7;
-}
+/* --- FORMULARIO DE REGISTRO DE ESTUDIO --- */
+.log-study-form .input-group { display: flex; gap: 10px; }
+.log-study-form .input-group > div { flex: 1; }
 
-.quest-item span {
-    flex-grow: 1;
-    text-align: left;
-    margin-right: 10px;
-}
+/* --- LISTA DE ACTIVIDAD RECIENTE --- */
+.activity-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.log-item { background-color: #FAFAFA; border: 1px solid #EEE; border-radius: 10px; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; }
+.log-item-details { display: flex; flex-direction: column; }
+.log-item-main { font-weight: 700; color: #555; }
+.log-item-sub { font-size: 0.9em; color: #888; }
+.log-item-xp { font-size: 1.1em; font-weight: 900; color: #C2F0C2; }
 
-.complete-quest-btn {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
+/* --- SECCIÓN DE ESTADÍSTICAS (PÁGINA PERFIL) --- */
+.stats-section { text-align: center; }
+.stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; 
+    gap: 10px;
+    margin-bottom: 15px;
 }
-.complete-quest-btn:hover {
-    background-color: #66BB6A;
+.stat-card {
+    background-color: #FAFAFA;
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid #EEE;
+    margin-top: 15px; 
 }
+.stat-value { display: block; font-size: 2.2em; font-weight: 900; color: #A7D8F9; line-height: 1.1; }
+.stat-value.streak { color: #FAD1E6; }
+.stat-label { font-size: 0.8em; font-weight: 700; color: #888; }
+.chart-container { position: relative; width: 100%; max-width: 300px; margin: 15px auto 0 auto; }
+.chart-container-bar { position: relative; width: 100%; height: 250px; margin: 15px auto 0 auto; }
 
-.quest-item.completed .complete-quest-btn {
-    background-color: #616161; 
-    cursor: not-allowed;
-}
-
-/* Trophies */
+/* --- TROFEOS (PÁGINA PERFIL) --- */
 .trophy-display {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
     gap: 15px;
-    margin-top: 20px;
 }
-
 .trophy-item {
-    background-color: #444951;
+    background-color: #FAFAFA;
     padding: 15px;
     border-radius: 10px;
     text-align: center;
-    width: 120px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
-    border: 1px solid #666;
-    position: relative;
-    overflow: hidden;
+    border: 2px dashed #EEE; 
+    transition: all 0.3s ease;
+    width: auto; 
+    cursor: pointer; 
 }
-
-.trophy-item::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-    transform: rotate(45deg);
-    opacity: 0;
-    transition: opacity 0.5s ease-out;
-}
-
+.trophy-item:hover { background-color: #F0F0F0; }
+.trophy-icon { font-size: 2em; margin-bottom: 5px; filter: grayscale(100%); opacity: 0.4; transition: all 0.3s ease; }
+.trophy-name { font-weight: 700; color: #CCC; font-size: 0.9em; transition: all 0.3s ease; }
 .trophy-item.unlocked {
-    border-color: #fdbb2d;
-    background-color: #383d44;
+    border-color: #FDBB2D; 
+    border-style: solid;
+    background-color: #FFFFFF;
+    box-shadow: 0 4px 15px rgba(253, 187, 45, 0.2); 
 }
-.trophy-item.unlocked::before {
-    opacity: 1;
-}
+.trophy-item.unlocked .trophy-icon { filter: grayscale(0%); opacity: 1; }
+.trophy-item.unlocked .trophy-name { color: #555; }
 
-.trophy-icon {
-    font-size: 2.5em;
-    margin-bottom: 8px;
-    color: #888;
-    transition: color 0.3s;
-}
-.trophy-item.unlocked .trophy-icon {
-    color: #FFD700;
-}
+/* --- BOTÓN DE CERRAR SESIÓN --- */
+#logout-btn { background-color: #FAD1E6; color: #333; padding: 8px 12px; border-radius: 8px; font-size: 0.8em; }
 
-.trophy-name {
-    font-weight: bold;
-    color: #eee;
-    margin-bottom: 5px;
-    font-size: 0.9em;
+/* =========================================================================
+   SECCIÓN DE SKILL TREE
+   ========================================================================= */
+.btn-add { background-color: #C2F0C2; color: #333; font-size: 1.5em; font-weight: 900; padding: 0; width: 40px; height: 40px; line-height: 40px; text-align: center; border-radius: 50%; }
+.btn-add:hover { background-color: #b0e0b0; }
+.btn-back { background-color: #EEE; color: #555; font-size: 1.5em; font-weight: 900; padding: 0; width: 40px; height: 40px; line-height: 40px; text-align: center; border-radius: 50%; }
+.btn-back:hover { background-color: #DDD; }
+#materias-list-container, #temas-list-container { display: flex; flex-direction: column; gap: 15px; }
+.materia-item { background-color: #FFFFFF; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06); cursor: pointer; transition: transform 0.2s ease; }
+.materia-item:hover { transform: translateY(-3px); }
+.materia-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.materia-name { font-size: 1.4em; font-weight: 900; color: #333; }
+.materia-level { font-size: 1em; font-weight: 700; color: #A7D8F9; }
+.materia-xp-bar-container { background-color: #F0F0F0; border-radius: 10px; height: 15px; overflow: hidden; position: relative; }
+.materia-xp-bar-fill { height: 100%; width: 0%; background: linear-gradient(to right, #A7D8F9, #C2F0C2); transition: width 0.5s ease-in-out; }
+.materia-xp-text { position: absolute; width: 100%; text-align: center; line-height: 15px; color: #999; font-weight: 700; font-size: 0.7em; }
+.tema-item { background-color: #FFFFFF; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06); }
+.tema-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.tema-name { font-size: 1.2em; font-weight: 900; color: #555; }
+.tema-xp-bar-container { background-color: #F0F0F0; border-radius: 10px; height: 15px; overflow: hidden; position: relative; }
+.tema-xp-bar-fill { height: 100%; width: 0%; background: linear-gradient(to right, #FAD1E6, #FDFD96); transition: width 0.5s ease-in-out; }
+.tema-xp-text { position: absolute; width: 100%; text-align: center; line-height: 15px; color: #999; font-weight: 700; font-size: 0.7em; }
+.btn-save { background-color: #A7D8F9; color: #fff; width: 100%; font-size: 1.1em; }
+.btn-save:hover { background-color: #90c8f0; }
+
+/* =========================================================================
+   BARRA DE NAVEGACIÓN
+   ========================================================================= */
+.bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; max-width: 600px; margin: 0 auto; background-color: #FFFFFF; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 5px; }
+.nav-button { flex: 1; background-color: transparent; border: none; border-radius: 15px; padding: 8px 5px; cursor: pointer; color: #AAA; display: flex; flex-direction: column; align-items: center; font-weight: 700; font-size: 0.75em; transition: background-color 0.2s, color 0.2s; }
+.nav-button span:first-child { font-size: 1.5em; }
+.nav-button:hover { background-color: #F5F5F5; }
+.nav-button.active { color: #A7D8F9; }
+
+/* =========================================================================
+   LÓGICA DE PÁGINAS
+   ========================================================================= */
+.page-content { display: none; }
+.page-content.active { display: block; }
+.bottom-nav.hidden { display: none; }
+
+/* =========================================================================
+   MODALES (ESTILO GENERAL)
+   ========================================================================= */
+.modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+.modal-content { z-index: 11; background-color: #FFF; margin: auto; padding: 30px; border-radius: 15px; width: 80%; max-width: 400px; text-align: center; position: relative; }
+.close-button { position: absolute; top: 10px; right: 15px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+.close-button:hover, .close-button:focus { color: #000; text-decoration: none; }
+.modal-content h2 { margin-bottom: 20px; }
+.modal-content .close-button-main { background-color: #A7D8F9; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 1.1em; font-weight: bold; margin-top: 20px; }
+
+/* ESTILOS PARA EL MODAL DE TROFEOS */
+.trophy-modal-content #trophy-modal-icon { font-size: 4em; display: block; margin-bottom: 10px; filter: grayscale(100%); opacity: 0.5; }
+.trophy-modal-content #trophy-modal-name { color: #888; }
+.trophy-modal-content #trophy-modal-desc { color: #777; margin-bottom: 20px; }
+.trophy-modal-content #trophy-modal-status { font-weight: 900; font-size: 0.9em; padding: 5px 10px; border-radius: 8px; }
+.trophy-status-locked { background-color: #EEE; color: #999; }
+.trophy-status-unlocked { background-color: #C2F0C2; color: #333; }
+.trophy-modal-content.unlocked #trophy-modal-icon { filter: grayscale(0%); opacity: 1; }
+.trophy-modal-content.unlocked #trophy-modal-name { color: #FDBB2D; } /* ¡COLOR DORADO! */
+
+/* ESTILOS PARA EL MODAL DE BADGE DESBLOQUEADO */
+.badge-modal-content h2 {
+    color: #FDBB2D; /* ¡COLOR DORADO! */
 }
-
-.trophy-desc {
-    font-size: 0.8em;
-    color: #bbb;
+.badge-modal-content #badge-modal-icon {
+    font-size: 5em;
+    display: block;
+    margin: 10px 0;
 }
-
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.8);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: #282c34;
-    margin: auto;
-    padding: 40px;
-    border: 3px solid #fdbb2d;
-    border-radius: 15px;
-    width: 80%;
-    max-width: 500px;
-    text-align: center;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.7);
-}
-
-.modal-content h2 {
-    font-family: 'Press Start 2P', cursive;
-    color: #fdbb2d;
-    font-size: 2.2em;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
-}
-
-.modal-content h3 {
-    color: #4CAF50;
-    font-size: 1.8em;
-    margin-bottom: 15px;
-}
-
-.modal-content p {
-    color: #eee;
-    font-size: 1.1em;
-    margin-bottom: 30px;
-}
-
-#modal-new-level, #modal-new-title {
-    font-weight: bold;
-    color: #fdbb2d;
-}
-
-.modal .close-button {
-    background-color: #fdbb2d;
-    color: #282c34;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1em;
-    font-weight: bold;
-    transition: background-color 0.2s;
-    margin-top: 20px;
-}
-
-.modal .close-button:hover {
-    background-color: #e0a800;
-}
-
-/* --- ESTILOS NUEVOS PARA AUTH Y HEADER --- */
-
-.auth-section {
-    background-color: #3a3f47;
-    padding: 30px;
-    border-radius: 10px;
-    border: 1px solid #555;
-    max-width: 400px;
-    margin: 50px auto;
-}
-
-.auth-section .title {
-    font-size: 2.2em;
+.badge-modal-content #badge-modal-name {
+    font-size: 1.5em;
+    color: #555;
     margin-bottom: 25px;
-}
-
-.auth-section input {
-    width: calc(100% - 24px);
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 2px solid #fdbb2d;
-    border-radius: 8px;
-    background-color: #444;
-    color: #eee;
-    font-size: 1em;
-}
-
-.auth-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.auth-buttons button {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    font-size: 1em;
-    color: #fff;
-}
-
-#login-btn {
-    background-color: #4CAF50;
-}
-#signup-btn {
-    background-color: #fdbb2d;
-    color: #282c34;
-}
-
-#auth-message {
-    margin-top: 15px;
-    color: #F44336; /* Rojo para mensajes de error */
-}
-
-.header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: -10px; /* Ajusta el espaciado con el subtítulo */
-}
-
-#logout-btn {
-    background-color: #F44336;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.8em;
-    transition: background-color 0.2s;
-}
-#logout-btn:hover {
-    background-color: #d32f2f;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .container {
-        padding: 20px;
-        margin: 10px;
-    }
-    .title {
-        font-size: 1.8em;
-    }
-    h2 {
-        font-size: 1.2em;
-    }
-    .level-number {
-        font-size: 1.5em;
-    }
-    .level-title {
-        font-size: 1em;
-    }
-    .btn-difficulty {
-        padding: 10px 10px;
-        font-size: 0.8em;
-    }
-    .difficulty-buttons {
-        flex-direction: column;
-        gap: 8px;
-    }
-    .modal-content {
-        padding: 30px;
-    }
-    .modal-content h2 {
-        font-size: 1.8em;
-    }
-    .modal-content h3 {
-        font-size: 1.4em;
-    }
-    .header-top {
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
-    .header-top .title {
-        margin-bottom: 0;
-    }
-    #logout-btn {
-        align-self: flex-end; /* Mover el botón a la derecha */
-    }
 }

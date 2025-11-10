@@ -4,15 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MedQuest: Nivel Médico</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.com/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="container">
         
-        <section id="auth-section" class="auth-section">
+        <section id="auth-section" class="auth-section card">
             <h1 class="title">MedQuest</h1>
             <input type="email" id="auth-email" placeholder="Email">
             <input type="password" id="auth-password" placeholder="Contraseña">
@@ -24,54 +29,174 @@
         </section>
 
         <main id="app-section" class="app-section" style="display: none;">
-            <header>
-                <div class="header-top">
-                    <h1 class="title">MedQuest</h1>
-                    <button id="logout-btn">Cerrar Sesión</button>
+            
+            <div class="page-container">
+                
+                <div id="page-home" class="page-content active">
+                    <header class="page-header">
+                        <h1>Registrar Estudio</h1>
+                        <button id="logout-btn">Cerrar Sesión</button>
+                    </header>
+                    <section class="card player-info-small">
+                        <span id="player-level" class="level-number">Nvl 1</span>
+                        <div class="xp-bar-container">
+                            <div class="xp-bar-fill" id="xp-bar-fill"></div>
+                            <span id="xp-text" class="xp-text">0/100 XP</span>
+                        </div>
+                    </section>
+                    <section class="card log-study-form">
+                        <h2>¿Qué estudiaste?</h2>
+                        <label for="select-materia">Materia</label>
+                        <select id="select-materia">
+                            <option value="">-- Elige una materia --</option>
+                        </select>
+                        <label for="select-tema">Tema</label>
+                        <select id="select-tema" disabled>
+                            <option value="">-- Primero elige una materia --</option>
+                        </select>
+                        <div class="input-group">
+                            <div>
+                                <label for="log-minutes">Minutos</label>
+                                <input type="number" id="log-minutes" placeholder="ej. 30">
+                            </div>
+                            <div>
+                                <label for="log-study-type">Tipo</label>
+                                <select id="log-study-type">
+                                    <option value="">-- Elige un tipo --</option>
+                                    <option value="Anki">Anki</option>
+                                    <option value="Video">Video</option>
+                                    <option value="Libro">Libro</option>
+                                    <option value="Clase/Audio">Clase / Audio</option>
+                                    <option value="Resumen/Apunte">Resumen / Apunte</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button id="log-study-btn" class="btn-save">¡Registrar Sesión!</button>
+                    </section>
+                    <section class="activity-section">
+                        <h2>Actividad Reciente</h2>
+                        <ul id="recent-activity-list" class="activity-list"></ul>
+                    </section>
                 </div>
-                <p class="subtitle">¡Sube de Nivel en tu Camino Médico!</p>
-            </header>
 
-            <section class="player-info">
-                <div class="level-display">
-                    <span id="player-level" class="level-number">Nivel 1</span>
-                    <span id="player-title" class="level-title">Estudiante Novato</span>
+                <div id="page-skills" class="page-content">
+                    <header class="page-header">
+                        <h1>🌳 Skill Tree</h1>
+                        <button id="show-add-materia-btn" class="btn-add">+</button>
+                    </header>
+                    <div id="materias-list-container"></div>
                 </div>
-                <div class="xp-bar-container">
-                    <div class="xp-bar-fill" id="xp-bar-fill"></div>
-                    <span id="xp-text" class="xp-text">0/100 XP</span>
+
+                <div id="page-temas" class="page-content">
+                    <header class="page-header">
+                        <button id="back-to-materias-btn" class="btn-back">←</button>
+                        <h1 id="temas-page-title">Temas</h1>
+                        <button id="show-add-tema-btn" class="btn-add">+</button>
+                    </header>
+                    <div id="temas-list-container"></div>
                 </div>
-            </section>
 
-            <section class="quest-input">
-                <input type="text" id="new-quest-text" placeholder="Añadir nueva misión (ej. 'Revisar Anki Fisio')">
-                <div class="difficulty-buttons">
-                    <button data-xp="10" class="btn-difficulty easy">Fácil (10 XP)</button>
-                    <button data-xp="30" class="btn-difficulty medium">Media (30 XP)</button>
-                    <button data-xp="50" class="btn-difficulty hard">Difícil (50 XP)</button>
+                <div id="page-store" class="page-content">
+                    <header class="page-header">
+                        <h1>🛒 Tienda de Buffs</h1>
+                    </header>
+
+                    <section class="card sinapsis-display-card">
+                        <span class="sinapsis-value" id="sinapsis-count-display">0</span>
+                        <span class="stat-label">Sinapsis (🧬)</span>
+                        
+                        <div class="sinapsis-bar-container">
+                            <div class="sinapsis-bar-fill" id="sinapsis-bar-fill"></div>
+                            <span id="sinapsis-bar-text" class="materia-xp-text">0/60 min para 1 🧬</span>
+                        </div>
+                    </section>
+                    
+                    <section class="card">
+                        <h2>Items</h2>
+                        <div id="store-items-container" class="store-grid">
+                            </div>
+                    </section>
                 </div>
-            </section>
 
-            <section class="quests-section">
-                <h2>📜 Misiones Actuales</h2>
-                <ul id="quest-list" class="quest-list"></ul>
-            </section>
 
-            <section class="trophies-section">
-                <h2>🏆 Trofeos</h2>
-                <div id="trophy-display" class="trophy-display"></div>
-            </section>
-
-            <div class="modal" id="level-up-modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h2>¡FELICIDADES!</h2>
-                    <h3>¡Has subido al <span id="modal-new-level"></span>!</h3>
-                    <p>¡Ahora eres un <span id="modal-new-title"></span>!</p>
-                    <button class="close-button">Continuar</button>
+                <div id="page-profile" class="page-content">
+                    <header class="page-header">
+                        <h1>🏆 Perfil y Trofeos</h1>
+                    </header>
+                    <section class="stats-section card">
+                        <h2>Estadísticas</h2>
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <span class="stat-value" id="total-minutes-display">0</span>
+                                <span class="stat-label">Minutos Totales</span>
+                            </div>
+                            <div class="stat-card"> 
+                                <span class="stat-value" id="total-sessions-display">0</span>
+                                <span class="stat-label">Sesiones Totales</span>
+                            </div>
+                            <div class="stat-card"> 
+                                <span class="stat-value streak" id="streak-display">🔥 0</span>
+                                <span class="stat-label">Días de Racha</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Minutos por Tipo de Estudio</span>
+                            <div class="chart-container">
+                                <canvas id="study-type-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Minutos por Materia</span>
+                            <div class="chart-container">
+                                <canvas id="materia-minutes-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Minutos por Hora del Día</span>
+                            <div class="chart-container-bar">
+                                <canvas id="study-hour-chart"></canvas>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="trophies-section card">
+                        <h2>Mis Trofeos</h2>
+                        <div id="trophy-display"></div>
+                    </section>
                 </div>
+            </div> <nav class="bottom-nav">
+                <button id="nav-home" class="nav-button active">
+                    <span>🏠</span> <span>Home</span>
+                </button>
+                <button id="nav-skills" class="nav-button">
+                    <span>🌳</span> <span>Habilidades</span>
+                </button>
+                <button id="nav-store" class="nav-button"> <span>🛒</span> <span>Tienda</span>
+                </button>
+                <button id="nav-profile" class="nav-button">
+                    <span>🏆</span> <span>Perfil</span>
+                </button>
+            </nav>
+        </main> </div> <div class="modal" id="level-up-modal"> <div class="modal-content card"> <span class="close-button">&times;</span> <h2>¡FELICIDADES!</h2> <h3>¡Has subido al <span id="modal-new-level"></span>!</h3> <p>¡Ahora eres un <span id="modal-new-title"></span>!</p> <button class="close-button-main">Continuar</button> </div> </div>
+    <div class="modal" id="add-materia-modal"> <div class="modal-content card"> <span class="close-button">&times;</span> <h2>Añadir Nueva Materia</h2> <input type="text" id="new-materia-name" placeholder="Ej. Fisiología II"> <button id="save-materia-btn" class="btn-save">Guardar</button> </div> </div>
+    <div class="modal" id="add-tema-modal"> <div class="modal-content card"> <span class="close-button">&times;</span> <h2>Añadir Nuevo Tema</h2> <input type="text" id="new-tema-name" placeholder="Ej. ❤️ Cardio"> <input type="number" id="new-tema-goal" placeholder="XP para dominar (ej. 100)"> <button id="save-tema-btn" class="btn-save">Guardar</button> </div> </div>
+    <div class="modal" id="trophy-details-modal"> <div class="modal-content card trophy-modal-content"> <span class="close-button">&times;</span> <span id="trophy-modal-icon"></span> <h2 id="trophy-modal-name"></h2> <p id="trophy-modal-desc"></p> <span id="trophy-modal-status" class="trophy-status-locked">BLOQUEADO</span> </div> </div>
+    <div class="modal" id="badge-unlocked-modal"> <div class="modal-content card badge-modal-content"> <span class="close-button">&times;</span> <h2>¡Badge Desbloqueado!</h2> <span id="badge-modal-icon"></span> <h3 id="badge-modal-name"></h3> <button class="close-button-main">¡Genial!</button> </div> </div>
+
+    <div class="modal" id="buy-modal">
+        <div class="modal-content card">
+            <span class="close-button">&times;</span>
+            <h2 id="buy-modal-title"></h2>
+            <p id="buy-modal-message"></p>
+            
+            <div id="buy-materia-select-container" style="display:none;">
+                <label for="buy-materia-select">Elegir Materia:</label>
+                <select id="buy-materia-select"></select>
             </div>
-        </main> </div>
+            
+            <button id="confirm-buy-btn" class="btn-save" style="margin-top: 15px;">Confirmar Compra</button>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
