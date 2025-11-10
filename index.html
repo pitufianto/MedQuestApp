@@ -6,57 +6,72 @@
     <title>MedQuest: Nivel Médico</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="container">
-        <header>
+        
+        <section id="auth-section" class="auth-section">
             <h1 class="title">MedQuest</h1>
-            <p class="subtitle">¡Sube de Nivel en tu Camino Médico!</p>
-        </header>
-
-        <section class="player-info">
-            <div class="level-display">
-                <span id="player-level" class="level-number">Nivel 1</span>
-                <span id="player-title" class="level-title">Estudiante Novato</span>
+            <input type="email" id="auth-email" placeholder="Email">
+            <input type="password" id="auth-password" placeholder="Contraseña">
+            <div class="auth-buttons">
+                <button id="login-btn">Iniciar Sesión</button>
+                <button id="signup-btn">Registrarse</button>
             </div>
-            <div class="xp-bar-container">
-                <div class="xp-bar-fill" id="xp-bar-fill"></div>
-                <span id="xp-text" class="xp-text">0/100 XP</span>
-            </div>
+            <p id="auth-message"></p>
         </section>
 
-        <section class="quest-input">
-            <input type="text" id="new-quest-text" placeholder="Añadir nueva misión (ej. 'Revisar Anki Fisio')">
-            <div class="difficulty-buttons">
-                <button data-xp="10" class="btn-difficulty easy">Fácil (10 XP)</button>
-                <button data-xp="30" class="btn-difficulty medium">Media (30 XP)</button>
-                <button data-xp="50" class="btn-difficulty hard">Difícil (50 XP)</button>
-            </div>
-        </section>
-
-        <section class="quests-section">
-            <h2>📜 Misiones Actuales</h2>
-            <ul id="quest-list" class="quest-list">
-                </ul>
-        </section>
-
-        <section class="trophies-section">
-            <h2>🏆 Trofeos</h2>
-            <div id="trophy-display" class="trophy-display">
+        <main id="app-section" class="app-section" style="display: none;">
+            <header>
+                <div class="header-top">
+                    <h1 class="title">MedQuest</h1>
+                    <button id="logout-btn">Cerrar Sesión</button>
                 </div>
-        </section>
+                <p class="subtitle">¡Sube de Nivel en tu Camino Médico!</p>
+            </header>
 
-        <div class="modal" id="level-up-modal">
-            <div class="modal-content">
-                <span class="close-button">&times;</span>
-                <h2>¡FELICIDADES!</h2>
-                <h3>¡Has subido al <span id="modal-new-level"></span>!</h3>
-                <p>¡Ahora eres un <span id="modal-new-title"></span>!</p>
-                <button class="close-button">Continuar</button>
+            <section class="player-info">
+                <div class="level-display">
+                    <span id="player-level" class="level-number">Nivel 1</span>
+                    <span id="player-title" class="level-title">Estudiante Novato</span>
+                </div>
+                <div class="xp-bar-container">
+                    <div class="xp-bar-fill" id="xp-bar-fill"></div>
+                    <span id="xp-text" class="xp-text">0/100 XP</span>
+                </div>
+            </section>
+
+            <section class="quest-input">
+                <input type="text" id="new-quest-text" placeholder="Añadir nueva misión (ej. 'Revisar Anki Fisio')">
+                <div class="difficulty-buttons">
+                    <button data-xp="10" class="btn-difficulty easy">Fácil (10 XP)</button>
+                    <button data-xp="30" class="btn-difficulty medium">Media (30 XP)</button>
+                    <button data-xp="50" class="btn-difficulty hard">Difícil (50 XP)</button>
+                </div>
+            </section>
+
+            <section class="quests-section">
+                <h2>📜 Misiones Actuales</h2>
+                <ul id="quest-list" class="quest-list"></ul>
+            </section>
+
+            <section class="trophies-section">
+                <h2>🏆 Trofeos</h2>
+                <div id="trophy-display" class="trophy-display"></div>
+            </section>
+
+            <div class="modal" id="level-up-modal">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <h2>¡FELICIDADES!</h2>
+                    <h3>¡Has subido al <span id="modal-new-level"></span>!</h3>
+                    <p>¡Ahora eres un <span id="modal-new-title"></span>!</p>
+                    <button class="close-button">Continuar</button>
+                </div>
             </div>
-        </div>
-
-    </div>
+        </main> </div>
 
     <script src="script.js"></script>
 </body>
