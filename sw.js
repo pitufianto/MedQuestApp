@@ -1,13 +1,13 @@
 // Lista de archivos para guardar en caché
-const CACHE_NAME = 'medquest-v2'; // <-- ¡Cambiado a v2!
+const CACHE_NAME = 'medquest-v3'; // <-- ¡Cambiado a v3!
 const urlsToCache = [
     '/',
     'index.html',
     'style.css',
     'script.js',
-    // ¡LINKS DE ÍCONOS ARREGLADOS!
-    'https://cdn-icons-png.flaticon.com/192/869/869636.png',
-    'https://cdn-icons-png.flaticon.com/512/869/869636.png',
+    // ¡LINKS DE ÍCONOS ARREGLADOS (OTRA VEZ)!
+    'https://img.icons8.com/nolan/192/brain.png',
+    'https://img.icons8.com/nolan/512/brain.png',
     
     'https://cdn.jsdelivr.net/npm/chart.js',
     'https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap',
