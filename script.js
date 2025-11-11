@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalNewLevel = document.getElementById('modal-new-level');
     const modalNewTitle = document.getElementById('modal-new-title');
     const closeButtons = document.querySelectorAll('.close-button'); 
-    const mainCloseButtons = document.querySelectorAll('.close-button-main'); 
+    const mainCloseButtons = document.querySelectorAll('.close-button-main'); // ¡ARREGLO! (Ahora son varios)
     const trophyDetailsModal = document.getElementById('trophy-details-modal');
     const trophyModalIcon = document.getElementById('trophy-modal-icon');
     const trophyModalName = document.getElementById('trophy-modal-name');
@@ -103,14 +103,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageContents = document.querySelectorAll('.page-content');
 
     // --- Estado del Jugador (Datos locales)
-    let player = { id: null, level: 1, xp: 0, xp_to_next_level: 100, sinapsis: 0, sinapsis_progress: 0 }; // ¡AÑADIDO SINAPSIS!
+    let player = { id: null, level: 1, xp: 0, xp_to_next_level: 100 };
     let localTrophies = []; 
     let localMaterias = []; 
     let localTemas = []; 
     let currentMateria = null; 
     let allLogs = []; 
 
-    // --- ¡LISTA MAESTRA DE TROFEOS! (Nombres actualizados)
+    // --- ¡LISTA MAESTRA DE TROFEOS! (Sin cambios)
     const levelTitles = [ "Estudiante Novato", "Aspirante a Interno", "Residente de Anatomía", "Maestro de Fisiología", "Explorador Patológico", "Conocedor Farmacológico", "Clínico Principiante", "Médico en Formación", "Cirujano de Sillón", "Guardián del Conocimiento", "Eminencia Médica" ];
     const allTrophies = [
         { id: 'level_10', name: '¡Ya no soy Rookie!', description: 'Alcanza Nivel 10 de Jugador', icon: '🔥' },
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'multitask_5', name: 'Multitask', description: 'Estudia 5 materias en 1 día', icon: '🌪️' },
         { id: 'poliglota_5', name: 'Políglota', description: 'Estudia 5 materias diferentes', icon: '🌍' },
         { id: 'micro_dose', name: 'Micro-Dosis', description: 'Registra una sesión de 15 min o menos', icon: '🔬' },
-        { id: 'focused', name: 'Locked in', description: '3 sesiones seguidas del mismo tema', icon: '🧘‍♀️' },
+        { id: 'focused', name: 'Enfocado', description: '3 sesiones seguidas del mismo tema', icon: '🧘‍♀️' },
         { id: 'chaos', name: 'Caos Controlado', description: '3 materias distintas en 90 min', icon: '🤯' },
         { id: 'archivist', name: 'El Archivista', description: 'Registra 10 temas diferentes', icon: '🗄️' },
         { id: 'specialist_1k', name: 'Especialista', description: 'Registra 1.000 minutos en una materia', icon: '🧑‍🏫' },
@@ -181,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadInitialData(userId) {
         console.log("Cargando datos para el usuario:", userId);
         
-        // Cargar Perfil (y las nuevas columnas de sinapsis)
         let { data: profile, error: profileError } = await supabase.from('profiles').select('*').eq('id', userId).single();
         if (profileError && profileError.code === 'PGRST116') {
             console.log('Perfil no encontrado, creándolo...');
@@ -189,10 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (createError) { console.error("Error creando perfil:", createError); return; }
             player = newProfile;
         } else if (profileError) { console.error("Error cargando perfil:", profileError); return; } 
-        else { 
-            // Si el perfil ya existe, actualiza las variables locales (incluyendo sinapsis)
-            player = profile; 
-        }
+        else { player = profile; }
 
         const { data: trophies, error: trophiesError } = await supabase.from('trophies_unlocked').select('*').eq('user_id', userId);
         if (trophiesError) console.error("Error cargando trofeos:", trophiesError);
@@ -267,8 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         populateDropdown(selectTema, temas, 'Elige un tema');
     }
-    
-    // ¡FUNCIÓN DE REGISTRO ACTUALIZADA CON LÓGICA DE SINAPSIS!
     async function handleLogStudy() {
         logStudyBtn.disabled = true; 
         const materiaId = selectMateria.value;
@@ -291,23 +285,16 @@ document.addEventListener('DOMContentLoaded', () => {
         allLogs.push(newLog); 
         const xpAmount = minutes;
         
-        // 1. Dar XP
         await addPlayerXP(xpAmount);
         await addSkillXP(materiaId, temaId, xpAmount); 
-
-        // 2. Dar Sinapsis
-        await addSinapsis(minutes); // ¡NUEVA LLAMADA!
-
-        // 3. Revisar Badges
+        await loadRecentActivity();
+        
         await checkEventBadges(newLog); 
 
-        // 4. Limpiar
-        await loadRecentActivity();
         logMinutesInput.value = '';
         logStudyTypeInput.selectedIndex = 0;
         logStudyBtn.disabled = false;
     }
-
     async function loadRecentActivity() {
         const recentLogs = allLogs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
         
@@ -339,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================================
-    // LÓGICA DE XP Y SKILLS
+    // LÓGICA DE XP Y SKILLS (Sin cambios)
     // =========================================================================
     async function addPlayerXP(amount) {
         let currentXp = player.xp + amount; let currentLevel = player.level; let currentXpToNext = player.xp_to_next_level; let levelUp = false;
@@ -386,58 +373,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error al añadir XP a las habilidades:", error);
         }
     }
-
+    
     // =========================================================================
-    // LÓGICA DE SINAPSIS
-    // =========================================================================
-    const SINAPSIS_PER_MINUTE = 60; // 1 Sinapsis por cada 60 minutos
-
-    async function addSinapsis(minutes) {
-        const currentProgress = player.sinapsis_progress;
-        const totalMinutes = currentProgress + minutes;
-        
-        let newSinapsis = 0;
-        let remainingProgress = totalMinutes;
-
-        // Calcular cuántas sinapsis completamos
-        while (remainingProgress >= SINAPSIS_PER_MINUTE) {
-            remainingProgress -= SINAPSIS_PER_MINUTE;
-            newSinapsis++;
-        }
-        
-        const newSinapsisCount = player.sinapsis + newSinapsis;
-
-        // Si ganamos algo, actualizar el perfil
-        if (newSinapsis > 0 || remainingProgress !== currentProgress) {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ 
-                    sinapsis: newSinapsisCount,
-                    sinapsis_progress: remainingProgress
-                })
-                .eq('id', player.id);
-
-            if (error) {
-                console.error("Error al guardar sinapsis:", error);
-                return;
-            }
-
-            // Actualizar el estado local del jugador
-            player.sinapsis = newSinapsisCount;
-            player.sinapsis_progress = remainingProgress;
-            
-            console.log(`Ganadas ${newSinapsis} Sinapsis. Total: ${player.sinapsis}`);
-
-            // Actualizar la vista de la tienda (si estamos en ella)
-            if (document.getElementById('page-store').classList.contains('active')) {
-                renderStore(); 
-            }
-        }
-    }
-
-
-    // =========================================================================
-    // MOTOR DE LOGROS
+    // ¡MOTOR DE LOGROS ACTUALIZADO!
     // =========================================================================
     function hasTrophy(trophyId) {
         return localTrophies.some(t => t.trophy_id === trophyId);
@@ -454,18 +392,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!trophy) { console.error(`Error: Trofeo con ID ${trophyId} no encontrado.`); return; }
         const { data: newTrophy, error } = await supabase.from('trophies_unlocked').insert({ user_id: player.id, trophy_id: trophy.id }).select().single();
         if (error) { console.error("Error al guardar trofeo en Supabase:", error); return; }
-        localTrophies.push(newTrophy);
+        localTrophies.push(newTrophy); // ¡Importante! Actualizar la lista local
         showBadgeUnlockModal(trophy);
     }
 
+    // Revisa badges de evento (al registrar)
     async function checkEventBadges(newLog) {
         if (allLogs.length === 1) { await unlockTrophy('first_log'); }
         if (newLog.minutes >= 200) { await unlockTrophy('marathon'); }
         if (newLog.minutes <= 15) { await unlockTrophy('micro_dose'); }
         const hour = new Date(newLog.created_at).getHours();
         if (hour >= 2 && hour < 4) { await unlockTrophy('dracula'); }
+        // (Faltan: sprint, focused, chaos, multitask)
     }
     
+    // Revisa badges de Nivel de Jugador (al subir de nivel)
     async function checkPlayerLevelBadges() {
         let newTrophiesUnlocked = false;
         const levelTrophies = allTrophies.filter(t => t.id.startsWith('level_')); 
@@ -476,187 +417,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 newTrophiesUnlocked = true;
             }
         }
-        if (newTrophiesUnlocked) { renderTrophies(); }
+        if (newTrophiesUnlocked) { 
+            renderTrophies(); 
+        }
     }
 
+    // ¡NUEVO! Revisa badges de Estadísticas (al ver el perfil)
     async function checkStatsBadges(logs, streak) {
-        // (Lógica de badges basada en estadísticas totales)
+        console.log("Revisando badges de estadísticas...");
+        let newTrophiesUnlocked = false; // Para saber si re-dibujamos
         const totalMinutes = logs.reduce((sum, log) => sum + log.minutes, 0);
         const totalSessions = logs.length;
-        if (totalMinutes >= 1000 && !hasTrophy('minutes_1k')) { await unlockTrophy('minutes_1k'); }
-        if (totalMinutes >= 5000 && !hasTrophy('minutes_5k')) { await unlockTrophy('minutes_5k'); }
-        if (totalMinutes >= 10000 && !hasTrophy('minutes_10k')) { await unlockTrophy('minutes_10k'); }
-        if (totalSessions >= 100 && !hasTrophy('sessions_100')) { await unlockTrophy('sessions_100'); }
-        if (streak >= 5 && !hasTrophy('streak_5')) { await unlockTrophy('streak_5'); }
-        if (streak >= 30 && !hasTrophy('streak_30')) { await unlockTrophy('streak_30'); }
-        if (streak >= 365 && !hasTrophy('streak_365')) { await unlockTrophy('streak_365'); }
 
-        const typeCounts = logs.reduce((acc, log) => { acc[log.study_type] = (acc[log.study_type] || 0) + 1; return acc; }, {});
-        if (typeCounts['Anki'] >= 50) { await unlockTrophy('anki_king'); }
-        if (typeCounts['Libro'] >= 20) { await unlockTrophy('lector'); }
-        if (typeCounts['Video'] >= 30) { await unlockTrophy('cinefilo'); }
-
-        const materiaMinutes = logs.reduce((acc, log) => { acc[log.materia_id] = (acc[log.materia_id] || 0) + log.minutes; return acc; }, {});
-        const temaMinutes = logs.reduce((acc, log) => { acc[log.tema_id] = (acc[log.tema_id] || 0) + log.minutes; return acc; }, {});
-        if (Object.values(materiaMinutes).some(min => min >= 1000)) { await unlockTrophy('specialist_1k'); }
-        if (Object.values(temaMinutes).some(min => min >= 1000)) { await unlockTrophy('tema_1k_mins'); }
-
-        renderTrophies();
-    }
-
-
-    // =========================================================================
-    // SECCIÓN DE TIENDA (NUEVA)
-    // =========================================================================
-    
-    // Lista Maestra de Items
-    const storeItems = [
-        { id: 'cafe_doble', name: 'Dosis de Cafecito☕️', cost: 5, icon: '☕️', effect: '1.5x XP en tu próxima sesión.', type: 'xp_buff' },
-        { id: 'monster', name: 'Dosis de MONSTER⚡️', cost: 7, icon: '⚡️', effect: '2x XP en tu próxima sesión.', type: 'xp_buff' },
-        { id: 'mix', name: 'Mix☕️⚡️', cost: 15, icon: '✨', effect: '3x XP en tu próxima sesión.', type: 'xp_buff' },
-        { id: 'specialist', name: 'Dosis de Especialista', cost: 12, icon: '🎯', effect: '3x XP en tu próxima sesión, en una Materia a elegir.', type: 'materia_buff' },
-        { id: 'frozen_time', name: 'Frozen in Time', cost: 25, icon: '🧊', effect: 'Protege tu racha de una caída (1 uso).', type: 'protection' },
-        { id: 'giratiempo', name: 'Giratiempo', cost: 50, icon: '⏳', effect: 'Repara una racha perdida (1 uso).', type: 'repair' },
-    ];
-
-    // Carga la página de la tienda
-    async function loadStore() {
-        console.log("Cargando tienda...");
-        // Actualizar la info del jugador para tener las sinapsis actualizadas
-        await updatePlayerInfo(); 
-        renderStoreDisplay();
-        renderStoreItems();
-    }
-
-    // Dibuja el contador de sinapsis
-    function renderStoreDisplay() {
-        const currentSinapsis = player.sinapsis || 0;
-        const currentProgress = player.sinapsis_progress || 0;
-        const SINAPSIS_GOAL = 60; // 60 minutos para 1 sinapsis
-
-        const progressPercentage = (currentProgress / SINAPSIS_GOAL) * 100;
-
-        document.getElementById('sinapsis-count-display').textContent = currentSinapsis;
-        document.getElementById('sinapsis-bar-fill').style.width = `${progressPercentage}%`;
-        document.getElementById('sinapsis-bar-text').textContent = `${currentProgress}/${SINAPSIS_GOAL} min para 1 🧬`;
-    }
-
-    // Dibuja los items de la tienda
-    function renderStoreItems() {
-        const container = document.getElementById('store-items-container');
-        container.innerHTML = '';
-        const currentSinapsis = player.sinapsis || 0;
-
-        storeItems.forEach(item => {
-            const itemElement = document.createElement('div');
-            itemElement.classList.add('materia-item');
-            itemElement.classList.add('store-item'); // Nuevo estilo
-            
-            const canAfford = currentSinapsis >= item.cost;
-            
-            itemElement.innerHTML = `
-                <div class="materia-header" style="margin-bottom: 5px;">
-                    <span class="materia-name">${item.icon} ${item.name}</span>
-                    <span class="materia-level" style="color: ${canAfford ? '#C2F0C2' : '#FAD1E6'};">${item.cost} 🧬</span>
-                </div>
-                <div style="font-size: 0.9em; color: #777;">${item.effect}</div>
-                <button 
-                    class="btn-save" 
-                    data-id="${item.id}"
-                    data-cost="${item.cost}"
-                    ${!canAfford ? 'disabled' : ''}
-                    style="margin-top: 10px; background-color: ${!canAfford ? '#EEE' : '#A7D8F9'}; color: ${!canAfford ? '#999' : '#fff'};"
-                >
-                    ${!canAfford ? `Faltan ${item.cost - currentSinapsis} 🧬` : 'Comprar Dosis'}
-                </button>
-            `;
-            container.appendChild(itemElement);
-        });
+        // --- Badges de Minutos ---
+        if (totalMinutes >= 1000 && !hasTrophy('minutes_1k')) { await unlockTrophy('minutes_1k'); newTrophiesUnlocked = true; }
+        if (totalMinutes >= 5000 && !hasTrophy('minutes_5k')) { await unlockTrophy('minutes_5k'); newTrophiesUnlocked = true; }
+        if (totalMinutes >= 10000 && !hasTrophy('minutes_10k')) { await unlockTrophy('minutes_10k'); newTrophiesUnlocked = true; }
         
-        // Añadir el event listener a los botones de compra después de que se dibujen
-        container.querySelectorAll('.btn-save').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const itemId = e.target.dataset.id;
-                const cost = parseInt(e.target.dataset.cost);
-                showBuyConfirmation(itemId, cost);
-            });
-        });
-    }
+        // --- Badges de Sesiones ---
+        if (totalSessions >= 100 && !hasTrophy('sessions_100')) { await unlockTrophy('sessions_100'); newTrophiesUnlocked = true; }
 
-    // Muestra el modal de confirmación de compra
-    function showBuyConfirmation(itemId, cost) {
-        const item = storeItems.find(i => i.id === itemId);
+        // --- Badges de Racha ---
+        if (streak >= 5 && !hasTrophy('streak_5')) { await unlockTrophy('streak_5'); newTrophiesUnlocked = true; }
+        if (streak >= 30 && !hasTrophy('streak_30')) { await unlockTrophy('streak_30'); newTrophiesUnlocked = true; }
+        if (streak >= 365 && !hasTrophy('streak_365')) { await unlockTrophy('streak_365'); newTrophiesUnlocked = true; }
         
-        document.getElementById('buy-modal-title').textContent = `¿Confirmar compra de ${item.name}?`;
-        document.getElementById('buy-modal-message').innerHTML = `Esto costará **${cost} Sinapsis (🧬)**. <br><br>Efecto: ${item.effect}`;
-        
-        const confirmBtn = document.getElementById('confirm-buy-btn');
-        confirmBtn.dataset.itemId = itemId;
-        confirmBtn.dataset.cost = cost;
+        // --- Badges de Tipo de Estudio ---
+        const typeCounts = logs.reduce((acc, log) => {
+            acc[log.study_type] = (acc[log.study_type] || 0) + 1;
+            return acc;
+        }, {});
+        if (typeCounts['Anki'] >= 50 && !hasTrophy('anki_king')) { await unlockTrophy('anki_king'); newTrophiesUnlocked = true; }
+        if (typeCounts['Libro'] >= 20 && !hasTrophy('lector')) { await unlockTrophy('lector'); newTrophiesUnlocked = true; }
+        if (typeCounts['Video'] >= 30 && !hasTrophy('cinefilo')) { await unlockTrophy('cinefilo'); newTrophiesUnlocked = true; }
 
-        // Lógica especial para el item "Especialista"
-        if (item.type === 'materia_buff') {
-            document.getElementById('buy-materia-select-container').style.display = 'block';
-            const select = document.getElementById('buy-materia-select');
-            select.innerHTML = ''; // Limpiar
-            localMaterias.forEach(m => {
-                const option = document.createElement('option');
-                option.value = m.id;
-                option.textContent = m.name;
-                select.appendChild(option);
-            });
-        } else {
-            document.getElementById('buy-materia-select-container').style.display = 'none';
+        // --- Badges de Hora del Día ---
+        const hourCounts = logs.reduce((acc, log) => {
+            const hour = new Date(log.created_at).getHours();
+            if (hour >= 22) acc.night_owl = (acc.night_owl || 0) + 1; // 10 PM en adelante
+            if (hour < 8) acc.early_bird = (acc.early_bird || 0) + 1; // Antes de las 8 AM
+            return acc;
+        }, {});
+        if (hourCounts.night_owl >= 10 && !hasTrophy('night_owl')) { await unlockTrophy('night_owl'); newTrophiesUnlocked = true; }
+        if (hourCounts.early_bird >= 10 && !hasTrophy('early_bird')) { await unlockTrophy('early_bird'); newTrophiesUnlocked = true; }
+
+        // --- Badges de Minutos por Tema/Materia ---
+        const materiaMinutes = logs.reduce((acc, log) => {
+            acc[log.materia_id] = (acc[log.materia_id] || 0) + log.minutes;
+            return acc;
+        }, {});
+        const temaMinutes = logs.reduce((acc, log) => {
+            acc[log.tema_id] = (acc[log.tema_id] || 0) + log.minutes;
+            return acc;
+        }, {});
+
+        if (Object.values(materiaMinutes).some(min => min >= 1000) && !hasTrophy('specialist_1k')) {
+            await unlockTrophy('specialist_1k'); newTrophiesUnlocked = true;
         }
-
-        document.getElementById('buy-modal').style.display = 'flex';
-    }
-
-    // Ejecuta la compra
-    async function executeBuy(itemId, cost) {
-        const materiaSelect = document.getElementById('buy-materia-select');
-        const selectedMateriaId = materiaSelect.value;
-        const item = storeItems.find(i => i.id === itemId);
-
-        document.getElementById('buy-modal').style.display = 'none';
-
-        if (player.sinapsis < cost) {
-            alert('¡ERROR! No tienes suficientes Sinapsis (🧬).');
-            return;
-        }
-
-        let buffValue = itemId;
-        if (item.type === 'materia_buff') {
-            if (!selectedMateriaId) {
-                 alert('Por favor, elige una materia para el buff.');
-                 return;
-            }
-            const selectedMateriaName = localMaterias.find(m => m.id == selectedMateriaId).name;
-            buffValue = `specialist_${selectedMateriaId}_${selectedMateriaName}`; // ej. specialist_34_Fisiologia II
+        if (Object.values(temaMinutes).some(min => min >= 1000) && !hasTrophy('tema_1k_mins')) {
+            await unlockTrophy('tema_1k_mins'); newTrophiesUnlocked = true;
         }
         
-        // 1. Descontar sinapsis y aplicar el buff
-        const newSinapsisCount = player.sinapsis - cost;
-        const { error } = await supabase
-            .from('profiles')
-            .update({ 
-                sinapsis: newSinapsisCount,
-                active_buff: buffValue,
-                // TODO: Añadir lógica para streak_protection y streak_repair
-            })
-            .eq('id', player.id);
+        // (Faltan: weekender, work_week, poliglota, archivist, tema_100, materia_lvl_10_x5)
 
-        if (error) {
-            console.error('Error al ejecutar compra:', error);
-            alert('Ocurrió un error al procesar la compra. Intenta de nuevo.');
-        } else {
-            // 2. Éxito: Actualizar el estado local y las vistas
-            player.sinapsis = newSinapsisCount;
-            player.active_buff = buffValue;
-            
-            alert(`¡Compra exitosa! Buff ${item.name} activado.`);
-            renderStoreDisplay();
-            renderStoreItems();
+        if (newTrophiesUnlocked) {
+            renderTrophies(); // Re-dibuja la lista de trofeos si ganamos algo
         }
     }
 
@@ -714,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadTemas(materia.id); 
     }
     async function loadTemas(materiaId) {
-        const { data, error } = await supabase.from('temas').select('*').eq('user_id', player.id).order('name', { ascending: true });
+        const { data, error } = await supabase.from('temas').select('*').eq('user_id', player.id).eq('materia_id', materiaId).order('name', { ascending: true });
         if (error) { console.error("Error cargando temas:", error); } 
         else { localTemas = data || []; renderTemas(); }
     }
@@ -761,8 +586,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // SECCIÓN DE PERFIL (ESTADÍSTICAS)
     // =========================================================================
     async function loadProfileStats() {
-        // ... (No hay cambios en esta función) ...
-        const { data: logs, error } = await supabase.from('study_logs').select('minutes, study_type, created_at, materia_id, tema_id, materias ( name )').eq('user_id', player.id);
+        console.log("Cargando estadísticas del perfil...");
+
+        // 1. Cargar todos los logs de estudio
+        const { data: logs, error } = await supabase
+            .from('study_logs')
+            .select('minutes, study_type, created_at, materia_id, tema_id, materias ( name )') 
+            .eq('user_id', player.id);
         if (error) {
             console.error("Error cargando estadísticas:", error);
             totalMinutesDisplay.textContent = '-'; totalSessionsDisplay.textContent = '-'; streakDisplay.textContent = '🔥 -'; 
@@ -773,18 +603,123 @@ document.addEventListener('DOMContentLoaded', () => {
         totalMinutesDisplay.textContent = totalMinutes;
         totalSessionsDisplay.textContent = allLogs.length; 
         
+        // 2. Calcular Racha de Días
         const { data: streak, error: streakError } = await supabase.rpc('get_current_streak', { p_user_id: player.id });
         let currentStreak = 0;
-        if (streakError) { console.error("Error calculando racha:", streakError); streakDisplay.textContent = '🔥 -'; } 
-        else { currentStreak = streak; streakDisplay.textContent = `🔥 ${currentStreak}`; streakDisplay.classList.add('streak'); }
+        if (streakError) {
+            console.error("Error calculando racha:", streakError);
+            streakDisplay.textContent = '🔥 -';
+        } else {
+            currentStreak = streak;
+            streakDisplay.textContent = `🔥 ${currentStreak}`; 
+            streakDisplay.classList.add('streak'); 
+        }
 
+        // 3. Renderizar gráficos
         renderStudyTypeChart(allLogs);
         renderMateriaMinutesChart(allLogs); 
         renderStudyHourChart(allLogs); 
+
+        // 4. Renderizar Trofeos
         renderTrophies();
+
+        // 5. ¡REVISAR TODOS LOS BADGES AHORA QUE TENEMOS LOS DATOS!
         await checkStatsBadges(allLogs, currentStreak);
     }
-    // ... (renderizado de gráficos) ...
+
+    function renderStudyTypeChart(logs) {
+        const stats = {}; 
+        logs.forEach(log => {
+            const type = log.study_type;
+            const minutes = log.minutes;
+            if (stats[type]) { stats[type] += minutes; } else { stats[type] = minutes; }
+        });
+        const labels = Object.keys(stats); 
+        const data = Object.values(stats); 
+        const colors = [ '#A7D8F9', '#C2F0C2', '#FDFD96', '#FAD1E6', '#BDB2FF', '#FFDAB9' ];
+
+        if (studyTypeChart) { studyTypeChart.destroy(); }
+        studyTypeChart = new Chart(studyTypeChartCtx, {
+            type: 'doughnut', 
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Minutos por Tipo',
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: '#FFFBF5',
+                    borderWidth: 3
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'top', labels: { font: { family: "'Nunito', sans-serif", weight: '700' } } } } }
+        });
+    }
+    
+    function renderMateriaMinutesChart(logs) {
+        const stats = {}; 
+        logs.forEach(log => {
+            const materiaName = log.materias ? log.materias.name : 'Otra';
+            const minutes = log.minutes;
+            if (stats[materiaName]) { stats[materiaName] += minutes; } 
+            else { stats[materiaName] = minutes; }
+        });
+        const labels = Object.keys(stats); 
+        const data = Object.values(stats); 
+        const colors = [ '#FAD1E6', '#BDB2FF', '#FFDAB9', '#A7D8F9', '#C2F0C2', '#FDFD96' ];
+        if (materiaMinutesChart) { materiaMinutesChart.destroy(); }
+        materiaMinutesChart = new Chart(materiaMinutesChartCtx, {
+            type: 'doughnut', 
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Minutos por Materia',
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: '#FFFBF5',
+                    borderWidth: 3
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'top', labels: { font: { family: "'Nunito', sans-serif", weight: '700' } } } } }
+        });
+    }
+
+    function renderStudyHourChart(logs) {
+        const stats = Array(24).fill(0);
+        logs.forEach(log => {
+            const hour = new Date(log.created_at).getHours(); 
+            stats[hour] += log.minutes; 
+        });
+        const labels = [
+            '12am', '1am', '2am', '3am', '4am', '5am', '6am', '7am', '8am', '9am', '10am', '11am',
+            '12pm', '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm', '9pm', '10pm', '11pm'
+        ];
+        const data = stats; 
+        
+        if (studyHourChart) {
+            studyHourChart.destroy();
+        }
+        studyHourChart = new Chart(studyHourChartCtx, {
+            type: 'bar', 
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Minutos Estudiados',
+                    data: data,
+                    backgroundColor: '#A7D8F9', 
+                    borderRadius: 5,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { font: { family: "'Nunito', sans-serif", weight: '700' } } },
+                    x: { ticks: { font: { family: "'Nunito', sans-serif", weight: '700' } } }
+                }
+            }
+        });
+    }
 
     // =========================================================================
     // FUNCIONES DE UI (RENDERIZADO)
@@ -796,18 +731,66 @@ document.addEventListener('DOMContentLoaded', () => {
         const xpPercentage = (player.xp / player.xp_to_next_level) * 100;
         xpBarFill.style.width = `${xpPercentage}%`;
         xpText.textContent = `${player.xp}/${player.xp_to_next_level} XP`;
+    }
+    
+    function renderTrophies() {
+        trophyDisplay.innerHTML = ''; 
+        const trophyElements = allTrophies.map(trophy => {
+            const isUnlocked = localTrophies.some(unlocked => unlocked.trophy_id === trophy.id);
+            const element = document.createElement('div');
+            element.classList.add('trophy-item');
+            if (isUnlocked) {
+                element.classList.add('unlocked');
+            }
+            element.innerHTML = `
+                <span class="trophy-icon">${trophy.icon}</span>
+                <div class="trophy-name">${trophy.name}</div>
+            `;
+            element.addEventListener('click', () => showTrophyDetails(trophy, isUnlocked));
+            return element;
+        });
+        const unlockedTrophies = trophyElements.filter(el => el.classList.contains('unlocked'));
+        const lockedTrophies = trophyElements.filter(el => !el.classList.contains('unlocked'));
+        unlockedTrophies.forEach(el => trophyDisplay.appendChild(el));
+        lockedTrophies.forEach(el => trophyDisplay.appendChild(el));
+    }
+
+    function showTrophyDetails(trophy, isUnlocked) {
+        trophyModalIcon.textContent = trophy.icon;
+        trophyModalName.textContent = trophy.name;
+        trophyModalDesc.textContent = trophy.description;
+        trophyModalContent.classList.remove('unlocked', 'locked');
         
-        // ¡ACTUALIZADO! Mostrar sinapsis en Home
-        const sinapsisBarFill = document.getElementById('sinapsis-bar-fill');
-        const sinapsisBarText = document.getElementById('sinapsis-bar-text');
-        if (sinapsisBarFill && sinapsisBarText) {
-             const progressPercentage = (player.sinapsis_progress / 60) * 100;
-             sinapsisBarFill.style.width = `${progressPercentage}%`;
-             sinapsisBarText.textContent = `${player.sinapsis_progress}/60 min para 1 🧬`;
+        if (isUnlocked) {
+            trophyModalContent.classList.add('unlocked');
+            trophyModalStatus.textContent = '¡GANADO!';
+            trophyModalStatus.className = 'trophy-status-unlocked';
+        } else {
+            trophyModalContent.classList.add('locked');
+            trophyModalStatus.textContent = 'BLOQUEADO';
+            trophyModalStatus.className = 'trophy-status-locked';
+        }
+        trophyDetailsModal.style.display = 'flex';
+    }
+
+    function showLevelUpModal() { levelUpModal.style.display = 'flex'; modalNewLevel.textContent = `Nivel ${player.level}`; modalNewTitle.textContent = levelTitles[player.level - 1] || levelTitles[levelTitles.length - 1]; }
+
+
+    function showPage(pageId) {
+        pageContents.forEach(page => { page.classList.remove('active'); });
+        const pageToShow = document.getElementById(pageId);
+        if (pageToShow) { pageToShow.classList.add('active'); }
+        if (pageId === 'page-temas') { bottomNav.classList.add('hidden'); } 
+        else { bottomNav.classList.remove('hidden'); }
+        if (pageId !== 'page-temas') {
+            navButtons.forEach(button => { button.classList.remove('active'); });
+            const pageName = pageId.split('-')[1];
+            const activeButton = document.getElementById(`nav-${pageName}`);
+            if (activeButton) { activeButton.classList.add('active'); }
         }
     }
-    // ... (renderizado de trofeos y modales) ...
-    
+
+
     // =========================================================================
     // EVENT LISTENERS
     // =========================================================================
@@ -819,7 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectMateria.addEventListener('change', handleMateriaSelect);
     logStudyBtn.addEventListener('click', handleLogStudy);
     
-    // --- Modales
+    // --- ¡ARREGLO DEL BUG DEL BOTÓN! ---
     closeButtons.forEach(button => { button.addEventListener('click', (e) => e.target.closest('.modal').style.display = 'none'); });
     mainCloseButtons.forEach(button => { button.addEventListener('click', (e) => e.target.closest('.modal').style.display = 'none'); });
     window.addEventListener('click', (e) => { if (e.target.classList.contains('modal')) { e.target.style.display = 'none'; } });
@@ -827,18 +810,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Navegación
     navHomeBtn.addEventListener('click', () => { showPage('page-home'); loadHomeData(); });
     navSkillsBtn.addEventListener('click', () => { showPage('page-skills'); loadMaterias(); });
-    navProfileBtn.addEventListener('click', () => { showPage('page-profile'); loadProfileStats(); });
-    // ¡NUEVO! Botón de Tienda
-    navStoreBtn.addEventListener('click', () => { showPage('page-store'); loadStore(); });
-    
-    // --- Listeners de Tienda
-    document.getElementById('confirm-buy-btn').addEventListener('click', (e) => {
-        const itemId = e.target.dataset.itemId;
-        const cost = parseInt(e.target.dataset.cost);
-        executeBuy(itemId, cost);
+    navProfileBtn.addEventListener('click', () => {
+        showPage('page-profile');
+        loadProfileStats(); 
     });
-
-    // ... (otros listeners) ...
+    // --- Listeners de Skill Tree (Materias)
+    showAddMateriaBtn.addEventListener('click', () => addMateriaModal.style.display = 'flex');
+    saveMateriaBtn.addEventListener('click', handleSaveMateria);
+    // --- Listeners de Temas
+    backToMateriasBtn.addEventListener('click', () => { showPage('page-skills'); loadMaterias(); });
+    showAddTemaBtn.addEventListener('click', () => addTemaModal.style.display = 'flex');
+    saveTemaBtn.addEventListener('click', handleSaveTema);
     // =========================================================================
     // INICIALIZACIÓN (Sin cambios)
     // =========================================================================

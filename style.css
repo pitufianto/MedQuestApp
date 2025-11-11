@@ -73,7 +73,7 @@ button:active { transform: scale(0.98); }
 .stats-section { text-align: center; }
 .stat-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr; 
+    grid-template-columns: 1fr 1fr 1fr; /* 3 columnas */
     gap: 10px;
     margin-bottom: 15px;
 }
@@ -85,12 +85,24 @@ button:active { transform: scale(0.98); }
     margin-top: 15px; 
 }
 .stat-value { display: block; font-size: 2.2em; font-weight: 900; color: #A7D8F9; line-height: 1.1; }
-.stat-value.streak { color: #FAD1E6; }
+.stat-value.streak {
+    color: #FAD1E6; /* Rosa Pastel */
+}
 .stat-label { font-size: 0.8em; font-weight: 700; color: #888; }
-.chart-container { position: relative; width: 100%; max-width: 300px; margin: 15px auto 0 auto; }
-.chart-container-bar { position: relative; width: 100%; height: 250px; margin: 15px auto 0 auto; }
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    margin: 15px auto 0 auto;
+}
+.chart-container-bar {
+    position: relative;
+    width: 100%;
+    height: 250px; /* Altura fija para el gráfico de barras */
+    margin: 15px auto 0 auto;
+}
 
-/* --- TROFEOS (PÁGINA PERFIL) --- */
+/* --- ¡TROFEOS ACTUALIZADOS! --- */
 .trophy-display {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -109,14 +121,16 @@ button:active { transform: scale(0.98); }
 .trophy-item:hover { background-color: #F0F0F0; }
 .trophy-icon { font-size: 2em; margin-bottom: 5px; filter: grayscale(100%); opacity: 0.4; transition: all 0.3s ease; }
 .trophy-name { font-weight: 700; color: #CCC; font-size: 0.9em; transition: all 0.3s ease; }
+/* Estilo Desbloqueado */
 .trophy-item.unlocked {
-    border-color: #FDBB2D; 
+    border-color: #FDBB2D; /* ¡COLOR DORADO! */
     border-style: solid;
     background-color: #FFFFFF;
-    box-shadow: 0 4px 15px rgba(253, 187, 45, 0.2); 
+    box-shadow: 0 4px 15px rgba(253, 187, 45, 0.2); /* Sombra dorada */
 }
 .trophy-item.unlocked .trophy-icon { filter: grayscale(0%); opacity: 1; }
 .trophy-item.unlocked .trophy-name { color: #555; }
+/* ¡FIN DE CAMBIOS EN TROFEOS! */
 
 /* --- BOTÓN DE CERRAR SESIÓN --- */
 #logout-btn { background-color: #FAD1E6; color: #333; padding: 8px 12px; border-radius: 8px; font-size: 0.8em; }
