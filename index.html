@@ -136,11 +136,25 @@
 
 
                 <div id="page-profile" class="page-content">
-                    <header class="page-header">
-                        <h1>🏆 Perfil y Trofeos</h1>
-                    </header>
-                    <section class="stats-section card">
-                        <h2>Estadísticas</h2>
+                        <header class="page-header">
+                            <h1>🏆 Perfil y Trofeos</h1>
+                        </header>
+
+                        <section id="profile-edit-section" class="card">
+                            <h2>Tu Perfil Público</h2>
+                            <p style="font-size: 0.9em; color: #777; margin-top: -10px; margin-bottom: 15px;">¡Elige un nombre de usuario único para que tus amigos puedan encontrarte!</p>
+                            
+                            <label for="profile-username">Username</label>
+                            <input type="text" id="profile-username" placeholder="Ej. MediStudent99">
+                            
+                            <label for="profile-avatar">URL de Avatar (Opcional)</label>
+                            <input type="text" id="profile-avatar" placeholder="Pega un link a una imagen .png o .jpg">
+                            
+                            <button id="save-profile-btn" class="btn-save">Guardar Perfil</button>
+                            <p id="profile-save-message" style="margin-top: 10px;"></p>
+                        </section>
+                        <section class="stats-section card">
+                            <h2>Estadísticas</h2>
                         <div class="stat-grid">
                             <div class="stat-card">
                                 <span class="stat-value" id="total-minutes-display">0</span>

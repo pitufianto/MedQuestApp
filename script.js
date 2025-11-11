@@ -62,6 +62,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalMinutesDisplay = document.getElementById('total-minutes-display'); 
     const totalSessionsDisplay = document.getElementById('total-sessions-display'); 
     const streakDisplay = document.getElementById('streak-display'); 
+
+    // ¡NUEVO! Perfil
+    const profileEditSection = document.getElementById('profile-edit-section');
+    const profileUsernameInput = document.getElementById('profile-username');
+    const profileAvatarInput = document.getElementById('profile-avatar');
+    const saveProfileBtn = document.getElementById('save-profile-btn');
+    const profileSaveMessage = document.getElementById('profile-save-message');
+
     const studyTypeChartCtx = document.getElementById('study-type-chart'); 
     let studyTypeChart = null; 
     const materiaMinutesChartCtx = document.getElementById('materia-minutes-chart'); 
@@ -1548,7 +1556,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // SECCIÓN DE PERFIL (ESTADÍSTICAS)
     // =========================================================================
     async function loadProfileStats() {
-        // ... (No hay cambios en esta función) ...
+        // ¡NUEVO! Cargar datos del perfil en los inputs
+        // (Usamos 'player' que es nuestra variable global del perfil)
+        if (player.username) {
+            profileUsernameInput.value = player.username;
+        }
+        if (player.avatar_url) {
+            profileAvatarInput.value = player.avatar_url;
+        }
+        profileSaveMessage.textContent = ''; // Limpiar mensaje
         const { data: logs, error } = await supabase.from('study_logs').select('minutes, study_type, created_at, materia_id, tema_id, materias ( name )').eq('user_id', player.id);
         if (error) {
             console.error("Error cargando estadísticas:", error);
@@ -1570,6 +1586,50 @@ document.addEventListener('DOMContentLoaded', () => {
         renderStudyHourChart(allLogs); 
         renderTrophies();
         await checkStatsBadges(allLogs, currentStreak);
+    }
+
+    /**
+     * ¡NUEVO! Guarda el username y avatar en la tabla 'profiles'
+     */
+    async function handleSaveProfile() {
+        saveProfileBtn.disabled = true;
+        profileSaveMessage.textContent = 'Guardando...';
+
+        const newUsername = profileUsernameInput.value.trim().toLowerCase();
+        const newAvatar = profileAvatarInput.value.trim();
+
+        if (newUsername.length < 3) {
+            profileSaveMessage.textContent = '❌ Tu username debe tener al menos 3 caracteres.';
+            saveProfileBtn.disabled = false;
+            return;
+        }
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .update({
+                username: newUsername,
+                avatar_url: newAvatar
+            })
+            .eq('id', player.id)
+            .select() // ¡Pedimos que nos devuelva el perfil actualizado!
+            .single();
+
+        if (error) {
+            console.error("Error guardando perfil:", error);
+            if (error.code === '23505') { // Error de "Unique constraint"
+                profileSaveMessage.textContent = '❌ ¡Oops! Ese username ya está tomado.';
+            } else {
+                profileSaveMessage.textContent = '❌ Error al guardar. Intenta de nuevo.';
+            }
+        } else {
+            // ¡Éxito!
+            profileSaveMessage.textContent = '✅ ¡Perfil guardado!';
+            // Actualizamos nuestro 'player' local
+            player.username = data.username; 
+            player.avatar_url = data.avatar_url;
+        }
+
+        saveProfileBtn.disabled = false;
     }
     // ... (renderizado de gráficos) ...
 
@@ -1701,6 +1761,9 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmKoModal.style.display = 'none';
     });
     confirmKoBtnConfirm.addEventListener('click', executeKOBoss);
+
+    // ¡NUEVO! Listener de Guardar Perfil
+    saveProfileBtn.addEventListener('click', handleSaveProfile);
 
     // =========================================================================
     // INICIALIZACIÓN (Sin cambios)
