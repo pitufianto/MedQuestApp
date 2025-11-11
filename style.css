@@ -73,7 +73,7 @@ button:active { transform: scale(0.98); }
 .stats-section { text-align: center; }
 .stat-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr; /* 3 columnas */
+    grid-template-columns: 1fr 1fr 1fr; 
     gap: 10px;
     margin-bottom: 15px;
 }
@@ -85,24 +85,12 @@ button:active { transform: scale(0.98); }
     margin-top: 15px; 
 }
 .stat-value { display: block; font-size: 2.2em; font-weight: 900; color: #A7D8F9; line-height: 1.1; }
-.stat-value.streak {
-    color: #FAD1E6; /* Rosa Pastel */
-}
+.stat-value.streak { color: #FAD1E6; }
 .stat-label { font-size: 0.8em; font-weight: 700; color: #888; }
-.chart-container {
-    position: relative;
-    width: 100%;
-    max-width: 300px;
-    margin: 15px auto 0 auto;
-}
-.chart-container-bar {
-    position: relative;
-    width: 100%;
-    height: 250px; /* Altura fija para el gráfico de barras */
-    margin: 15px auto 0 auto;
-}
+.chart-container { position: relative; width: 100%; max-width: 300px; margin: 15px auto 0 auto; }
+.chart-container-bar { position: relative; width: 100%; height: 250px; margin: 15px auto 0 auto; }
 
-/* --- ¡TROFEOS ACTUALIZADOS! --- */
+/* --- TROFEOS (PÁGINA PERFIL) --- */
 .trophy-display {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -121,16 +109,14 @@ button:active { transform: scale(0.98); }
 .trophy-item:hover { background-color: #F0F0F0; }
 .trophy-icon { font-size: 2em; margin-bottom: 5px; filter: grayscale(100%); opacity: 0.4; transition: all 0.3s ease; }
 .trophy-name { font-weight: 700; color: #CCC; font-size: 0.9em; transition: all 0.3s ease; }
-/* Estilo Desbloqueado */
 .trophy-item.unlocked {
-    border-color: #FDBB2D; /* ¡COLOR DORADO! */
+    border-color: #FDBB2D; 
     border-style: solid;
     background-color: #FFFFFF;
-    box-shadow: 0 4px 15px rgba(253, 187, 45, 0.2); /* Sombra dorada */
+    box-shadow: 0 4px 15px rgba(253, 187, 45, 0.2); 
 }
 .trophy-item.unlocked .trophy-icon { filter: grayscale(0%); opacity: 1; }
 .trophy-item.unlocked .trophy-name { color: #555; }
-/* ¡FIN DE CAMBIOS EN TROFEOS! */
 
 /* --- BOTÓN DE CERRAR SESIÓN --- */
 #logout-btn { background-color: #FAD1E6; color: #333; padding: 8px 12px; border-radius: 8px; font-size: 0.8em; }
@@ -164,7 +150,7 @@ button:active { transform: scale(0.98); }
    BARRA DE NAVEGACIÓN
    ========================================================================= */
 .bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; max-width: 600px; margin: 0 auto; background-color: #FFFFFF; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 5px; }
-.nav-button { flex: 1; background-color: transparent; border: none; border-radius: 15px; padding: 8px 5px; cursor: pointer; color: #AAA; display: flex; flex-direction: column; align-items: center; font-weight: 700; font-size: 0.75em; transition: background-color 0.2s, color 0.2s; }
+.nav-button { flex: 1; background-color: transparent; border: none; border-radius: 15px; padding: 8px 5px; cursor: pointer; color: #AAA; display: flex; flex-direction: column; align-items: center; font-weight: 700; font-size: 0.7em; transition: background-color 0.2s, color 0.2s; }
 .nav-button span:first-child { font-size: 1.5em; }
 .nav-button:hover { background-color: #F5F5F5; }
 .nav-button.active { color: #A7D8F9; }
@@ -209,4 +195,394 @@ button:active { transform: scale(0.98); }
     font-size: 1.5em;
     color: #555;
     margin-bottom: 25px;
+}
+
+/* ESTE CSS TIENE MENOS LINEAS QUE ANTES*/
+
+/* =========================================================================
+   ESTILOS DE TIENDA (NUEVO)
+   ========================================================================= */
+
+.sinapsis-display-card {
+    text-align: center;
+    padding: 20px;
+}
+.sinapsis-value {
+    display: block;
+    font-size: 3.5em; /* Más grande */
+    font-weight: 900;
+    color: #A7D8F9; /* Color principal */
+    line-height: 1.1;
+}
+.sinapsis-bar-container {
+    background-color: #F0F0F0;
+    border-radius: 10px;
+    height: 15px;
+    overflow: hidden;
+    position: relative;
+    margin-top: 10px; /* Espacio */
+}
+.sinapsis-bar-fill {
+    height: 100%;
+    width: 0%; /* JS controlará esto */
+    background: linear-gradient(to right, #A7D8F9, #C2F0C2);
+    transition: width 0.5s ease-in-out;
+}
+/* (El .materia-xp-text que usa la barra ya existe y está centrado) */
+
+/* =========================================================================
+   ESTILOS DE BARRA DE XP (HOME)
+   ========================================================================= */
+
+.player-info-small .xp-bar-container {
+    flex: 1; /* Ocupa el espacio restante */
+    height: 15px;
+    background-color: #F0F0F0;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden; /* Asegura que la barra de relleno se quede adentro */
+}
+
+.player-info-small .xp-bar-fill {
+    height: 100%;
+    width: 0%; /* JS controla esto */
+    background: linear-gradient(to right, #A7D8F9, #C2F0C2);
+    transition: width 0.5s ease-in-out;
+}
+
+.player-info-small .xp-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    line-height: 15px;
+    color: #999;
+    font-weight: 700;
+    font-size: 0.7em;
+}
+
+/* =========================================================================
+   ESTILOS DE JEFES DE NIVEL
+   ========================================================================= */
+
+#jefes-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.jefe-item {
+    background-color: #FFFBF5; /* Un fondo más oscuro */
+    border: 2px dashed #FAD1E6; /* Borde rosa "alerta" */
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(250, 209, 230, 0.5); /* Sombra rosa */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.jefe-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.jefe-name {
+    font-size: 1.3em;
+    font-weight: 900;
+    color: #d9534f; /* Rojo/Rosa oscuro */
+}
+
+.jefe-sub {
+    font-size: 0.9em;
+    color: #888;
+    font-weight: 700;
+}
+
+.jefe-countdown {
+    font-size: 1.5em;
+    font-weight: 900;
+    color: #d9534f;
+    text-align: right;
+}
+
+/* =========================================================================
+   FIX: BARRA DE NAVEGACIÓN DE 5 BOTONES
+   ========================================================================= */
+
+/* 1. Oculta el SEGUNDO <span> (el texto) dentro de cada botón */
+.nav-button span:nth-child(2) {
+    display: none;
+}
+
+/* 2. Crece un poco el PRIMER <span> (el ícono) para que ocupe el espacio */
+.nav-button span:first-child {
+    font-size: 1.6em; /* Un poco más grande que el 1.5em original */
+    margin-bottom: 0; /* Quita el espacio que tenía para el texto */
+}
+
+/* 3. Ajusta el padding para que el ícono quede bien centrado */
+.nav-button {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* =========================================================================
+   ESTILOS BOTÓN "COMPLETAR JEFE"
+   ========================================================================= */
+
+.jefe-item {
+    /* ... (tus estilos existentes) ... */
+    /* ¡Nuevo! Usamos flex-wrap para que el botón se mueva bien en móviles */
+    flex-wrap: wrap; 
+}
+
+.jefe-complete-btn {
+    /* Ajusta el botón para que ocupe todo el ancho inferior */
+    width: 100%; 
+    background-color: #C2F0C2; /* Verde "éxito" */
+    color: #333;
+    font-weight: 900;
+    font-size: 1em;
+    padding: 10px;
+    margin-top: 15px; /* Espacio para separarlo de los detalles */
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.jefe-complete-btn:hover {
+    background-color: #b0e0b0;
+}
+
+/* =========================================================================
+   FIX: CENTRAR TÍTULO DE JEFES
+   ========================================================================= */
+
+#page-jefes .page-header {
+    justify-content: center; /* ¡Centra el título! */
+    position: relative; /* Necesario para posicionar el botón + */
+    margin-bottom: 20px; /* Asegura el margen inferior */
+}
+
+#page-jefes .page-header .btn-add {
+    position: absolute; /* Saca el botón del flujo normal */
+    right: 0; /* Lo pone a la derecha de la página */
+    top: 0; /* Lo alinea arriba */
+}
+
+/* =========================================================================
+   FEATURE: MODO CRISIS (GLOW)
+   ========================================================================= */
+
+/* Cuando el body tenga esta clase, se activa el "aura" */
+body.crisis-mode-active main#app-section {
+    /* Usamos 'filter: drop-shadow' porque es mucho más rápido 
+       y con mejor rendimiento que 'box-shadow' para animar */
+    animation: crisis-glow 2s infinite alternate;
+}
+
+/* La animación que crea la pulsación del "aura" */
+@keyframes crisis-glow {
+    from {
+        /* Sombra rosa/roja pálida */
+        filter: drop-shadow(0 0 8px rgba(217, 83, 79, 0.5)); 
+    }
+    to {
+        /* Sombra roja más intensa */
+        filter: drop-shadow(0 0 15px rgba(217, 83, 79, 0.9)); 
+    }
+}
+
+/* Hacemos que la barra de navegación también reaccione */
+body.crisis-mode-active .bottom-nav {
+    box-shadow: 0 -2px 20px rgba(217, 83, 79, 0.5);
+    border-top: 1px solid #d9534f; /* Línea roja de alerta */
+}
+
+
+/* =========================================================================
+   FIX: ARREGLAR PADDING EN PÁGINA DE JEFES
+   ========================================================================= */
+
+/* Damos padding al header de la página de Jefes */
+#page-jefes .page-header {
+    padding: 0 10px; /* ¡Padding horizontal! */
+    box-sizing: border-box;
+}
+
+/* Movemos el botón '+' para que respete el nuevo padding */
+#page-jefes .page-header .btn-add {
+    right: 10px; /* ¡No en 0! */
+}
+
+/* Damos padding a la lista de Jefes */
+#jefes-list-container {
+    padding: 0 10px; /* ¡Padding horizontal! */
+}
+
+/* =========================================================================
+   ESTILOS MODAL MODO CRISIS
+   ========================================================================= */
+
+.crisis-modal-content h2 {
+    color: #d9534f; /* ¡Rojo/Rosa de alerta! */
+    font-size: 1.8em;
+}
+.crisis-modal-content #crisis-modal-icon {
+    font-size: 5em;
+    display: block;
+    margin: 10px 0;
+}
+.crisis-modal-content #crisis-modal-desc {
+    font-size: 1.1em;
+    color: #555;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+/* El .close-button-main usará los estilos que ya tiene */
+
+/* =========================================================================
+   ESTILOS BARRA DE VIDA (HP) DEL JEFE
+   ========================================================================= */
+.jefe-hp-bar-container {
+    background-color: #F0F0F0;
+    border-radius: 10px;
+    height: 15px;
+    overflow: hidden;
+    position: relative;
+    width: 100%; /* Ocupa todo el ancho de la tarjeta */
+    margin-top: 10px; /* Espacio */
+}
+.jefe-hp-bar-fill {
+    height: 100%;
+    width: 100%; /* Empieza llena */
+    /* ¡Rojo de vida! */
+    background: linear-gradient(to right, #d9534f, #FAD1E6);
+    transition: width 0.5s ease-in-out;
+}
+.jefe-hp-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    line-height: 15px;
+    color: #555; /* Texto oscuro para que se lea */
+    font-weight: 700;
+    font-size: 0.7em;
+}
+
+
+/* =========================================================================
+   ESTILOS NUEVOS MODALES (DAÑO, CONFIRM, ALERTA)
+   ========================================================================= */
+
+/* --- 1. Toast de Daño --- */
+/* (Hacemos que el modal sea pequeño y en la parte de arriba) */
+#damage-toast {
+    align-items: flex-start; /* Alinear arriba */
+}
+.damage-toast-content {
+    margin-top: 20px;
+    padding: 15px 20px;
+    background-color: #d9534f; /* Rojo jefe */
+    color: #fff;
+    font-weight: 900;
+    font-size: 1.1em;
+    text-align: center;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(217, 83, 79, 0.5);
+    /* Animación de entrada y salida */
+    animation: fade-in-out 2.5s ease-in-out forwards;
+}
+
+@keyframes fade-in-out {
+    0% { transform: translateY(-50px); opacity: 0; }
+    20% { transform: translateY(0); opacity: 1; }
+    80% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-50px); opacity: 0; }
+}
+
+/* --- 2. Modal de Confirmación K.O. --- */
+.confirm-ko-content h2 {
+    color: #d9534f;
+}
+.confirm-ko-content p {
+    font-size: 1.1em;
+    color: #555;
+    margin-bottom: 25px;
+}
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+}
+.modal-buttons button {
+    flex: 1;
+}
+.btn-cancel {
+    background-color: #EEE;
+    color: #777;
+}
+.btn-cancel:hover {
+    background-color: #DDD;
+}
+/* .btn-save (K.O.) ya tiene estilos */
+
+
+/* --- 3. Modal de Alerta Reutilizable --- */
+.alert-modal-content h2 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+.alert-modal-content #alert-modal-icon {
+    font-size: 4em;
+    display: block;
+    margin: 10px 0;
+}
+.alert-modal-content p {
+    font-size: 1.1em;
+    color: #555;
+    margin-bottom: 25px;
+}
+/* Colores de Éxito */
+.alert-modal-content.success h2 { color: #5cb85c; }
+/* Colores de Error */
+.alert-modal-content.error h2 { color: #d9534f; }
+
+/* =========================================================================
+   ESTILOS ANIMACIÓN GOLPE DE DAÑO
+   ========================================================================= */
+#damage-hit-modal {
+    /* Fondo transparente, sin 'align-items' para que podamos 
+       posicionarlo con JavaScript */
+    background-color: transparent;
+    pointer-events: none; /* No se puede hacer clic en él */
+    display: none; /* Empezar oculto */
+}
+
+#damage-hit-text {
+    font-size: 4em; /* ¡Texto grande! */
+    font-weight: 900;
+    color: #d9534f; /* Rojo */
+    /* Sombra de texto para que resalte */
+    text-shadow: 
+        -2px -2px 0 #fff,  
+         2px -2px 0 #fff,
+        -2px  2px 0 #fff,
+         2px  2px 0 #fff;
+    /* Animación de "golpe" */
+    animation: damage-hit-animation 1.5s ease-out forwards;
+    position: absolute; /* ¡Clave! */
+}
+
+@keyframes damage-hit-animation {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-80px) scale(1.2); /* Sube y crece */
+        opacity: 0; /* Se desvanece */
+    }
 }

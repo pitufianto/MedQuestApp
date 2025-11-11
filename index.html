@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="theme-color" content="#A7D8F9">
+    <link rel="manifest" href="manifest.json">
+
     <title>MedQuest: Nivel Médico</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +16,7 @@
     <link rel="stylesheet" href="style.css">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="container">
@@ -39,9 +43,19 @@
                     </header>
                     <section class="card player-info-small">
                         <span id="player-level" class="level-number">Nvl 1</span>
-                        <div class="xp-bar-container">
-                            <div class="xp-bar-fill" id="xp-bar-fill"></div>
-                            <span id="xp-text" class="xp-text">0/100 XP</span>
+                        
+                        <div class="bars-container" style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                            
+                            <div class="xp-bar-container">
+                                <div class="xp-bar-fill" id="xp-bar-fill"></div>
+                                <span id="xp-text" class="xp-text">0/100 XP</span>
+                            </div>
+                            
+                            <div class="sinapsis-bar-container" style="height: 12px;">
+                                <div class="sinapsis-bar-fill" id="sinapsis-bar-fill-home"></div> 
+                                <span id="sinapsis-bar-text-home" class="materia-xp-text" style="line-height: 12px; font-size: 0.65em;">0/60 min 🧬</span>
+                            </div>
+
                         </div>
                     </section>
                     <section class="card log-study-form">
@@ -76,7 +90,8 @@
                     </section>
                     <section class="activity-section">
                         <h2>Actividad Reciente</h2>
-                        <ul id="recent-activity-list" class="activity-list"></ul>
+                        <ul id="recent-activity-list" class="activity-list">
+                            </ul>
                     </section>
                 </div>
 
@@ -97,11 +112,33 @@
                     <div id="temas-list-container"></div>
                 </div>
 
+                <div id="page-store" class="page-content">
+                    <header class="page-header">
+                        <h1>🛒 Tienda de Buffs</h1>
+                    </header>
+
+                    <section class="card sinapsis-display-card">
+                        <span class="sinapsis-value" id="sinapsis-count-display">0</span>
+                        <span class="stat-label">Sinapsis (🧬)</span>
+                        
+                        <div class="sinapsis-bar-container">
+                            <div class="sinapsis-bar-fill" id="sinapsis-bar-fill"></div>
+                            <span id="sinapsis-bar-text" class="materia-xp-text">0/60 min para 1 🧬</span>
+                        </div>
+                    </section>
+                    
+                    <section class="card">
+                        <h2>Items</h2>
+                        <div id="store-items-container" class="store-grid">
+                            </div>
+                    </section>
+                </div>
+
+
                 <div id="page-profile" class="page-content">
                     <header class="page-header">
                         <h1>🏆 Perfil y Trofeos</h1>
                     </header>
-                    
                     <section class="stats-section card">
                         <h2>Estadísticas</h2>
                         <div class="stat-grid">
@@ -137,28 +174,83 @@
                             </div>
                         </div>
                     </section>
-
                     <section class="trophies-section card">
                         <h2>Mis Trofeos</h2>
-                        <div id="trophy-display"></div>
+                        <div id="trophy-display">
+                            </div>
                     </section>
                 </div>
-            </div> <nav class="bottom-nav">
+
+                <div id="page-jefes" class="page-content">
+                    <section class="boss-section">
+                        <header class="page-header" style="margin-bottom: 10px;">
+                            <h2>Jefes de Nivel ⚔️</h2>
+                            <button id="show-add-jefe-btn" class="btn-add">+</button>
+                        </header>
+                        <div id="jefes-list-container">
+                            </div>
+                    </section>
+                </div>
+            </div> 
+
+            <nav class="bottom-nav">
                 <button id="nav-home" class="nav-button active">
                     <span>🏠</span> <span>Home</span>
                 </button>
                 <button id="nav-skills" class="nav-button">
                     <span>🌳</span> <span>Habilidades</span>
                 </button>
+                <button id="nav-jefes" class="nav-button">
+                    <span>⚔️</span> <span>Jefes</span>
+                </button>
+                <button id="nav-store" class="nav-button">
+                    <span>🛒</span> <span>Tienda</span>
+                </button>
                 <button id="nav-profile" class="nav-button">
                     <span>🏆</span> <span>Perfil</span>
                 </button>
             </nav>
-        </main> </div> <div class="modal" id="level-up-modal"> <div class="modal-content card"> <span class="close-button">&times;</span> <h2>¡FELICIDADES!</h2> <h3>¡Has subido al <span id="modal-new-level"></span>!</h3> <p>¡Ahora eres un <span id="modal-new-title"></span>!</p> <button class="close-button-main">Continuar</button> </div> </div>
-    <div class="modal" id="add-materia-modal"> <div class="modal-content card"> <span class="close-button">&times;</span> <h2>Añadir Nueva Materia</h2> <input type="text" id="new-materia-name" placeholder="Ej. Fisiología II"> <button id="save-materia-btn" class="btn-save">Guardar</button> </div> </div>
-    <div class="modal" id="add-tema-modal"> <div class="modal-content card"> <span class="close-button">&times;</span> <h2>Añadir Nuevo Tema</h2> <input type="text" id="new-tema-name" placeholder="Ej. ❤️ Cardio"> <input type="number" id="new-tema-goal" placeholder="XP para dominar (ej. 100)"> <button id="save-tema-btn" class="btn-save">Guardar</button> </div> </div>
-    <div class="modal" id="trophy-details-modal"> <div class="modal-content card trophy-modal-content"> <span class="close-button">&times;</span> <span id="trophy-modal-icon"></span> <h2 id="trophy-modal-name"></h2> <p id="trophy-modal-desc"></p> <span id="trophy-modal-status" class="trophy-status-locked">BLOQUEADO</span> </div> </div>
-
+        </main> 
+        
+    </div> <div class="modal" id="level-up-modal">
+        <div class="modal-content card">
+            <span class="close-button">&times;</span>
+            <h2>¡FELICIDADES!</h2>
+            <h3>¡Has subido al <span id="modal-new-level"></span>!</h3>
+            <p>¡Ahora eres un <span id="modal-new-title"></span>!</p>
+            <button class="close-button-main">Continuar</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="add-materia-modal">
+        <div class="modal-content card">
+            <span class="close-button">&times;</span>
+            <h2>Añadir Nueva Materia</h2>
+            <input type="text" id="new-materia-name" placeholder="Ej. Fisiología II">
+            <button id="save-materia-btn" class="btn-save">Guardar</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="add-tema-modal">
+        <div class="modal-content card">
+            <span class="close-button">&times;</span>
+            <h2>Añadir Nuevo Tema</h2>
+            <input type="text" id="new-tema-name" placeholder="Ej. ❤️ Cardio">
+            <input type="number" id="new-tema-goal" placeholder="XP para dominar (ej. 100)">
+            <button id="save-tema-btn" class="btn-save">Guardar</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="trophy-details-modal">
+        <div class="modal-content card trophy-modal-content">
+            <span class="close-button">&times;</span>
+            <span id="trophy-modal-icon"></span>
+            <h2 id="trophy-modal-name"></h2>
+            <p id="trophy-modal-desc"></p>
+            <span id="trophy-modal-status" class="trophy-status-locked">BLOQUEADO</span>
+        </div>
+    </div>
+    
     <div class="modal" id="badge-unlocked-modal">
         <div class="modal-content card badge-modal-content">
             <span class="close-button">&times;</span>
@@ -169,6 +261,79 @@
         </div>
     </div>
 
+    <div class="modal" id="buy-modal">
+        <div class="modal-content card">
+            <span class="close-button">&times;</span>
+            <h2 id="buy-modal-title"></h2>
+            <p id="buy-modal-message"></p>
+            <div id="buy-materia-select-container" style="display:none;">
+                <label for="buy-materia-select">Elegir Materia:</label>
+                <select id="buy-materia-select"></select>
+            </div>
+            <button id="confirm-buy-btn" class="btn-save" style="margin-top: 15px;">Confirmar Compra</button>
+        </div>
+    </div>
+
+    <div class="modal" id="add-jefe-modal">
+        <div class="modal-content card">
+            <span class="close-button">&times;</span>
+            <h2>Programar Jefe de Nivel</h2>
+            <label for="new-jefe-name">Nombre del Jefe (Examen)</label>
+            <input type="text" id="new-jefe-name" placeholder="Ej. Parcial de Fármaco">
+            <label for="select-jefe-materia">Materia (para 1.25x XP)</label>
+            <select id="select-jefe-materia">
+                <option value="">-- Elige una materia --</option>
+            </select>
+            <label for="new-jefe-date">Fecha del Examen</label>
+            <input type="date" id="new-jefe-date">
+            <label for="new-jefe-hp">Vida del Jefe (HP)</label>
+            <input type="number" id="new-jefe-hp" placeholder="ej. 300 (minutos de estudio)">
+            <button id="save-jefe-btn" class="btn-save">¡Programar!</button>
+        </div>
+    </div>
+
+    <div class="modal" id="crisis-mode-modal">
+        <div class="modal-content card crisis-modal-content">
+            <span class="close-button">&times;</span>
+            <h2>🚨 ¡MODO CRISIS! 🚨</h2>
+            <span id="crisis-modal-icon">⚔️</span>
+            <p id="crisis-modal-desc">¡Uno de tus Jefes es en 7 días o menos! Estudiar su materia te dará <strong>1.25x XP</strong>. ¡Énfasis 6,5!</p>
+            <button class="close-button-main">¡Entendido!</button>
+        </div>
+    </div>
+
+    <div class="modal" id="damage-toast">
+        <div class="modal-content card damage-toast-content">
+            <span id="damage-toast-text">¡+10 de daño a [Jefe]!</span>
+        </div>
+    </div>
+
+    <div class="modal" id="confirm-ko-modal">
+        <div class="modal-content card confirm-ko-content">
+            <h2>💥 ¿Golpe Final? 💥</h2>
+            <p id="confirm-ko-text">¿Estás segura de que quieres dar el GOLPE FINAL al Jefe "[JefeName]"?</p>
+            <div class="modal-buttons">
+                <button id="confirm-ko-btn-cancel" class="btn-cancel">Cancelar</button>
+                <button id="confirm-ko-btn-confirm" class="btn-save">¡K.O.!</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="alert-modal">
+        <div class="modal-content card alert-modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="alert-modal-title"></h2>
+            <span id="alert-modal-icon"></span>
+            <p id="alert-modal-message"></p>
+            <button class="close-button-main">Entendido</button>
+        </div>
+    </div>
+
+    <div class="modal" id="damage-hit-modal">
+        <span id="damage-hit-text">-30 HP!</span>
+    </div>
+
     <script src="script.js"></script>
+    
 </body>
 </html>

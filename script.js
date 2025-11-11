@@ -46,6 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const logStudyTypeInput = document.getElementById('log-study-type'); 
     const logStudyBtn = document.getElementById('log-study-btn');
     const recentActivityList = document.getElementById('recent-activity-list');
+
+    // --- Página Home (Jefes)
+    const showAddJefeBtn = document.getElementById('show-add-jefe-btn');
+    const jefesListContainer = document.getElementById('jefes-list-container');
+    const addJefeModal = document.getElementById('add-jefe-modal');
+    const saveJefeBtn = document.getElementById('save-jefe-btn');
+    const newJefeNameInput = document.getElementById('new-jefe-name');
+    const selectJefeMateria = document.getElementById('select-jefe-materia');
+    const newJefeDateInput = document.getElementById('new-jefe-date');
+    const newJefeHpInput = document.getElementById('new-jefe-hp'); // <-- ¡AÑADE ESTA LÍNEA!
     
     // --- Página Perfil
     const trophyDisplay = document.getElementById('trophy-display');
@@ -82,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalNewLevel = document.getElementById('modal-new-level');
     const modalNewTitle = document.getElementById('modal-new-title');
     const closeButtons = document.querySelectorAll('.close-button'); 
-    const mainCloseButtons = document.querySelectorAll('.close-button-main'); // ¡ARREGLO! (Ahora son varios)
+    const mainCloseButtons = document.querySelectorAll('.close-button-main'); 
     const trophyDetailsModal = document.getElementById('trophy-details-modal');
     const trophyModalIcon = document.getElementById('trophy-modal-icon');
     const trophyModalName = document.getElementById('trophy-modal-name');
@@ -93,24 +103,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const badgeModalIcon = document.getElementById('badge-modal-icon');
     const badgeModalName = document.getElementById('badge-modal-name');
 
+    const crisisModeModal = document.getElementById('crisis-mode-modal'); // <-- ¡AÑADE ESTA LÍNEA! 
+
+    // ¡NUEVOS!
+    const damageToastModal = document.getElementById('damage-toast');
+    const damageToastText = document.getElementById('damage-toast-text');
+    const confirmKoModal = document.getElementById('confirm-ko-modal');
+    const confirmKoText = document.getElementById('confirm-ko-text');
+    const confirmKoBtnCancel = document.getElementById('confirm-ko-btn-cancel');
+    const confirmKoBtnConfirm = document.getElementById('confirm-ko-btn-confirm');
+    const alertModal = document.getElementById('alert-modal');
+    const alertModalTitle = document.getElementById('alert-modal-title');
+    const alertModalIcon = document.getElementById('alert-modal-icon');
+    const alertModalMessage = document.getElementById('alert-modal-message');
+    const alertModalContent = alertModal.querySelector('.modal-content');
+
+    // ¡NUEVO! Animación de Golpe
+    const damageHitModal = document.getElementById('damage-hit-modal');
+    const damageHitText = document.getElementById('damage-hit-text');
+
 
     // --- Navegación
     const bottomNav = document.querySelector('.bottom-nav');
     const navHomeBtn = document.getElementById('nav-home');
     const navSkillsBtn = document.getElementById('nav-skills');
+    const navJefesBtn = document.getElementById('nav-jefes'); // <-- ¡AÑADE ESTA LÍNEA!
+    const navStoreBtn = document.getElementById('nav-store');
     const navProfileBtn = document.getElementById('nav-profile');
     const navButtons = document.querySelectorAll('.nav-button');
     const pageContents = document.querySelectorAll('.page-content');
 
     // --- Estado del Jugador (Datos locales)
-    let player = { id: null, level: 1, xp: 0, xp_to_next_level: 100 };
+    let player = { id: null, level: 1, xp: 0, xp_to_next_level: 100, sinapsis: 0, sinapsis_progress: 0 }; // ¡AÑADIDO SINAPSIS!
     let localTrophies = []; 
     let localMaterias = []; 
     let localTemas = []; 
     let currentMateria = null; 
-    let allLogs = []; 
+    let allLogs = [];
+    let localJefes = [];
+    let isCrisisModeCurrentlyActive = false; // ¡Variable para el nuevo pop-up!
+    let animationQueue = null; // <-- ¡AÑADE ESTA LÍNEA!
 
-    // --- ¡LISTA MAESTRA DE TROFEOS! (Sin cambios)
+    // --- ¡LISTA MAESTRA DE TROFEOS! (Nombres actualizados)
     const levelTitles = [ "Estudiante Novato", "Aspirante a Interno", "Residente de Anatomía", "Maestro de Fisiología", "Explorador Patológico", "Conocedor Farmacológico", "Clínico Principiante", "Médico en Formación", "Cirujano de Sillón", "Guardián del Conocimiento", "Eminencia Médica" ];
     const allTrophies = [
         { id: 'level_10', name: '¡Ya no soy Rookie!', description: 'Alcanza Nivel 10 de Jugador', icon: '🔥' },
@@ -140,13 +174,14 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'multitask_5', name: 'Multitask', description: 'Estudia 5 materias en 1 día', icon: '🌪️' },
         { id: 'poliglota_5', name: 'Políglota', description: 'Estudia 5 materias diferentes', icon: '🌍' },
         { id: 'micro_dose', name: 'Micro-Dosis', description: 'Registra una sesión de 15 min o menos', icon: '🔬' },
-        { id: 'focused', name: 'Enfocado', description: '3 sesiones seguidas del mismo tema', icon: '🧘‍♀️' },
+        { id: 'focused', name: 'Locked in', description: '3 sesiones seguidas del mismo tema', icon: '🧘‍♀️' },
         { id: 'chaos', name: 'Caos Controlado', description: '3 materias distintas en 90 min', icon: '🤯' },
         { id: 'archivist', name: 'El Archivista', description: 'Registra 10 temas diferentes', icon: '🗄️' },
         { id: 'specialist_1k', name: 'Especialista', description: 'Registra 1.000 minutos en una materia', icon: '🧑‍🏫' },
         { id: 'anki_king', name: 'Anki King', description: 'Registra 50 sesiones de "Anki"', icon: '👑' },
         { id: 'lector', name: 'El Lector', description: 'Registra 20 sesiones de "Libro"', icon: '👓' },
         { id: 'cinefilo', name: 'Cinéfilo', description: 'Registra 30 sesiones de "Video"', icon: '🍿' },
+        { id: 'boss_slayer_1', name: '¡Adiós, Gargamel!', description: 'Completa tu primer Jefe de Nivel (Examen)', icon: '🏆' }
     ];
 
 
@@ -181,6 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadInitialData(userId) {
         console.log("Cargando datos para el usuario:", userId);
         
+        // Cargar Perfil (y las nuevas columnas de sinapsis)
         let { data: profile, error: profileError } = await supabase.from('profiles').select('*').eq('id', userId).single();
         if (profileError && profileError.code === 'PGRST116') {
             console.log('Perfil no encontrado, creándolo...');
@@ -188,7 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (createError) { console.error("Error creando perfil:", createError); return; }
             player = newProfile;
         } else if (profileError) { console.error("Error cargando perfil:", profileError); return; } 
-        else { player = profile; }
+        else { 
+            // Si el perfil ya existe, actualiza las variables locales (incluyendo sinapsis)
+            player = profile; 
+        }
 
         const { data: trophies, error: trophiesError } = await supabase.from('trophies_unlocked').select('*').eq('user_id', userId);
         if (trophiesError) console.error("Error cargando trofeos:", trophiesError);
@@ -198,9 +237,103 @@ document.addEventListener('DOMContentLoaded', () => {
         if (logsError) { console.error("Error cargando todos los logs:", logsError); }
         else { allLogs = logs || []; }
 
-        updatePlayerInfo();
-        renderTrophies(); 
-        await loadHomeData();
+        const { data: jefesData, error: jefesError } = await supabase
+            .from('jefes')
+            .select('id, name, materia_id, exam_date, damage_goal, damage_dealt, materias ( name )')
+            .eq('user_id', player.id)
+            .eq('status', 'activo')
+            .order('exam_date', { ascending: true });
+            
+        if (jefesError) {
+            console.error("Error cargando jefes activos:", jefesError);
+        } else {
+            localJefes = jefesData || [];
+            console.log(`Cargados ${localJefes.length} jefes activos.`);
+            checkGlobalCrisisMode(); // <-- ¡PÉGALO AQUÍ!
+        }
+        
+        updatePlayerInfo()
+
+    renderTrophies(); 
+    await loadHomeData();
+    }
+    // =BEGGIN: ¡PEGA LAS FUNCIONES QUE FALTABAN AQUÍ! =======================
+    
+    /**
+     * Dibuja la lista de trofeos en la página de perfil.
+     * ¡VERSIÓN 2.0: Ordena los desbloqueados primero!
+     */
+    function renderTrophies() {
+        trophyDisplay.innerHTML = ''; // Limpiar la grilla
+        if (!allTrophies) {
+            console.warn("Lista maestra de trofeos no encontrada.");
+            return;
+        }
+
+        // ¡NUEVA LÓGICA DE ORDENAMIENTO!
+        const sortedTrophies = [...allTrophies].sort((a, b) => {
+            const aUnlocked = hasTrophy(a.id);
+            const bUnlocked = hasTrophy(b.id);
+            // (true se vuelve 1, false se vuelve 0)
+            // b - a los pone en orden descendente (desbloqueados primero)
+            return bUnlocked - aUnlocked;
+        });
+
+        // Usamos la nueva lista ordenada
+        sortedTrophies.forEach(trophy => {
+            const isUnlocked = hasTrophy(trophy.id); // 'hasTrophy' ya existe :)
+            const trophyElement = document.createElement('div');
+            trophyElement.classList.add('trophy-item');
+            
+            if (isUnlocked) {
+                trophyElement.classList.add('unlocked');
+            }
+            
+            trophyElement.innerHTML = `
+                <span class="trophy-icon">${trophy.icon}</span>
+                <span class="trophy-name">${trophy.name}</span>
+            `;
+            
+            // Añadir listener para abrir el modal de detalles
+            trophyElement.addEventListener('click', () => {
+                showTrophyDetailsModal(trophy, isUnlocked);
+            });
+            
+            trophyDisplay.appendChild(trophyElement);
+        });
+    }
+
+    /**
+     * Muestra el modal con los detalles de un trofeo.
+     */
+    function showTrophyDetailsModal(trophy, isUnlocked) {
+        trophyModalIcon.textContent = trophy.icon;
+        trophyModalName.textContent = trophy.name;
+        trophyModalDesc.textContent = trophy.description;
+
+        // Quitar clases viejas y poner las nuevas
+        trophyModalContent.classList.toggle('unlocked', isUnlocked);
+
+        if (isUnlocked) {
+            trophyModalStatus.textContent = 'DESBLOQUEADO';
+            trophyModalStatus.className = 'trophy-status-unlocked';
+        } else {
+            trophyModalStatus.textContent = 'BLOQUEADO';
+            trophyModalStatus.className = 'trophy-status-locked';
+        }
+        
+        trophyDetailsModal.style.display = 'flex';
+    }
+
+    /**
+     * Muestra el modal de "Subiste de Nivel".
+     */
+    function showLevelUpModal() {
+        modalNewLevel.textContent = `Nivel ${player.level}`;
+        // Usar la lista de levelTitles. Asegurarse de que no se pase del array.
+        const titleIndex = Math.min(player.level - 1, levelTitles.length - 1);
+        modalNewTitle.textContent = levelTitles[titleIndex] || "Eminencia Médica";
+        levelUpModal.style.display = 'flex';
     }
 
     // =========================================================================
@@ -213,13 +346,15 @@ document.addEventListener('DOMContentLoaded', () => {
         else { 
             localMaterias = materias || [];
             populateMateriaDropdown(localMaterias); 
+            populateJefeMateriaDropdown(); // <-- ¡AÑADE ESTA LÍNEA!
         }
-        
+
         const { data: temas, error: temasError } = await supabase.from('temas').select('id, name, materia_id').eq('user_id', player.id);
         if (temasError) console.error("Error cargando todos los temas:", temasError);
         else localTemas = temas || [];
 
         await loadRecentActivity();
+        // await loadJefes(); // <-- ¡AÑADE ESTA LÍNEA!
     }
     function populateMateriaDropdown(materias) {
         selectMateria.innerHTML = '<option value="">-- Elige una materia --</option>'; 
@@ -240,6 +375,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const temasDeMateria = localTemas.filter(t => t.materia_id == materiaId);
         populateTemaDropdown(temasDeMateria);
     }
+
+    selectMateria.addEventListener('change', handleMateriaSelect);
+
     function populateDropdown(selectElement, items, defaultText) {
         selectElement.innerHTML = `<option value="">-- ${defaultText} --</option>`;
         if (items.length === 0) {
@@ -263,7 +401,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         populateDropdown(selectTema, temas, 'Elige un tema');
     }
+
+    /**
+     * ¡NUEVO! Muestra el "Toast" de daño
+     */
+    function showDamageToast(damage, bossName) {
+        damageToastText.textContent = `¡Has hecho ${damage} de daño a ${bossName}! ⚔️`;
+        damageToastModal.style.display = 'flex';
+        
+        // Ocultar automáticamente después de 2.5 segundos
+        setTimeout(() => {
+            damageToastModal.style.display = 'none';
+        }, 2500); // 2500ms = 2.5s (dura lo mismo que la animación CSS)
+    }
+    
+    // ¡FUNCIÓN DE REGISTRO ACTUALIZADA CON LÓGICA DE SINAPSIS!
     async function handleLogStudy() {
+        let animationData = null; // <-- AÑADE ESTA LÍNEA
         logStudyBtn.disabled = true; 
         const materiaId = selectMateria.value;
         const temaId = selectTema.value;
@@ -275,7 +429,111 @@ document.addEventListener('DOMContentLoaded', () => {
             logStudyBtn.disabled = false;
             return;
         }
-        const { data: newLog, error: logError } = await supabase.from('study_logs').insert({ user_id: player.id, materia_id: materiaId, tema_id: temaId, study_type: studyType, minutes: minutes }).select().single();
+
+        // ==================================================
+        // ¡NUEVA LÓGICA DE BUFFS!
+        // ==================================================
+        let xpAmount = minutes;
+        let buffGeneral = 1.0; // Para buffs de Tienda (Café, Monster)
+        let buffMateria = 1.0; // Para buffs de Materia (Jefe, Especialista)
+        const hoy = new Date();
+        const CRITIC_DAYS = 7; // "Modo Crisis" = 7 días antes
+
+        // 1. Check Buff de Jefes (Modo Crisis)
+        const numMateriaId = parseInt(materiaId);
+        const activeJefe = localJefes.find(jefe => {
+            if (jefe.materia_id !== numMateriaId) return false;
+            
+            const examDate = new Date(jefe.exam_date + 'T00:00:00');
+            const diffTime = examDate - hoy;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            // "Modo Crisis" es desde 7 días antes hasta el día del examen (inclusive)
+            return diffDays >= 0 && diffDays <= CRITIC_DAYS;
+        });
+
+        if (activeJefe) {
+            console.log("¡MODO CRISIS ACTIVADO! (Jefe)");
+            buffMateria = 1.25; // ¡El 1.25x!
+            // --- ¡NUEVO! Aplicar daño al Jefe ---
+            // Usamos 'xpAmount' (los minutos base) como daño
+            const damageAmount = xpAmount; 
+            const newDamage = Math.min(
+                activeJefe.damage_dealt + damageAmount, 
+                activeJefe.damage_goal
+            );
+
+            // Actualizar en Supabase (sin esperar, "fire and forget")
+            supabase.from('jefes')
+                .update({ damage_dealt: newDamage })
+                .eq('id', activeJefe.id)
+                .then(({ error }) => {
+                    if (error) console.error("Error al aplicar daño al Jefe:", error);
+                    else console.log(`Daño aplicado al Jefe ${activeJefe.id}: ${damageAmount} HP`);
+                });
+
+            // Actualizar la lista local al instante (para el renderizado)
+            activeJefe.damage_dealt = newDamage; 
+            
+            // Actualizar la lista local al instante (para el renderizado)
+            activeJefe.damage_dealt = newDamage; 
+
+            // ¡NUEVO! Preparar datos de animación
+            animationData = { bossId: activeJefe.id, damage: damageAmount }; 
+
+            // --- Fin de aplicar daño ---
+        }
+
+        // 2. Check Buffs de la Tienda (del perfil del jugador)
+        const storeBuff = player.active_buff; // ej. "cafe_doble", "specialist_34"
+        let buffConsumido = false;
+
+        if (storeBuff) {
+            if (storeBuff.startsWith('specialist_')) {
+                const parts = storeBuff.split('_');
+                const buffMateriaId = parseInt(parts[1]);
+                
+                if (buffMateriaId === numMateriaId) {
+                    console.log("¡BUFF DE ESPECIALISTA ACTIVADO! (Tienda)");
+                    // El buff de Especialista (3x) es más fuerte que el de Jefe (1.25x)
+                    buffMateria = Math.max(buffMateria, 3.0); 
+                    buffConsumido = true;
+                }
+            } else if (storeBuff === 'cafe_doble') {
+                buffGeneral = 1.5;
+                buffConsumido = true;
+            } else if (storeBuff === 'monster') {
+                buffGeneral = 2.0;
+                buffConsumido = true;
+            } else if (storeBuff === 'mix') {
+                buffGeneral = 3.0;
+                buffConsumido = true;
+            }
+            
+            // ¡Importante! Consumir el buff si se usó
+            if (buffConsumido) {
+                player.active_buff = null;
+                await supabase.from('profiles').update({ active_buff: null }).eq('id', player.id);
+                console.log("Buff de la tienda consumido.");
+            }
+        }
+
+        // 3. Calcular XP Final (Se multiplican!)
+        const finalXp = Math.round(xpAmount * buffGeneral * buffMateria);
+        console.log(`XP Base: ${xpAmount}, XP Final: ${finalXp} (General: ${buffGeneral}x, Materia: ${buffMateria}x)`);
+        // ==================================================
+        // FIN LÓGICA DE BUFFS
+        // ==================================================
+
+        const { data: newLog, error: logError } = await supabase.from('study_logs').insert({ 
+            user_id: player.id, 
+            materia_id: materiaId, 
+            tema_id: temaId, 
+            study_type: studyType, 
+            minutes: minutes,
+            xp_gained: finalXp // ¡Guardamos el XP final!
+        }).select().single();
+        
         if (logError) {
             console.error("Error al guardar el log de estudio:", logError);
             logStudyBtn.disabled = false;
@@ -283,18 +541,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         allLogs.push(newLog); 
-        const xpAmount = minutes;
         
-        await addPlayerXP(xpAmount);
-        await addSkillXP(materiaId, temaId, xpAmount); 
-        await loadRecentActivity();
-        
+        // 1. Dar XP
+        await addPlayerXP(finalXp); // ¡Usamos el XP final!
+        await addSkillXP(materiaId, temaId, finalXp); // ¡Usamos el XP final!
+
+        // 2. Dar Sinapsis
+        await addSinapsis(minutes); // Las sinapsis se ganan por minutos, no por XP
+
+        // 3. Revisar Badges
         await checkEventBadges(newLog); 
 
+        // 4. Limpiar
+        await loadRecentActivity();
         logMinutesInput.value = '';
         logStudyTypeInput.selectedIndex = 0;
         logStudyBtn.disabled = false;
+
+        return animationData; // Devolver los datos de animación
     }
+
+    // --- Página Home (Registro)
+    logStudyBtn.addEventListener('click', async () => { // <-- 1. Añadir ASYNC
+        const animationData = await handleLogStudy(); // <-- 2. Añadir AWAIT y capturar datos
+
+        // 3. ¡Comprobar si hay que animar!
+        if (animationData) {
+            // Guardar en la cola global
+            animationQueue = animationData; 
+            // Navegar
+            showPage('page-jefes');
+            loadJefes();
+        }
+    });
+
     async function loadRecentActivity() {
         const recentLogs = allLogs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
         
@@ -319,14 +599,344 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="log-item-main">${materiaName} → ${temaName}</span>
                     <span class="log-item-sub">${log.study_type}</span>
                 </div>
-                <span class="log-item-xp">+${log.minutes} XP</span>
+                <span class="log-item-xp">+${log.xp_gained || log.minutes} XP</span>
             `;
             recentActivityList.appendChild(li);
         });
     }
 
+    // ==================================================
+    // ¡NUEVO! FUNCIONES DE JEFES
+    // ==================================================
+
+    /**
+     * Carga los jefes 'activos' desde Supabase
+     */
+    // async function loadJefes() {
+    //    const { data, error } = await supabase
+    //        .from('jefes')
+    //        .select('*, materias ( name )') // ¡Hacemos un JOIN para obtener el nombre de la materia!
+    //        .eq('user_id', player.id)
+    //        .eq('status', 'activo')
+    //        .order('exam_date', { ascending: true });
+    //
+    //    if (error) {
+    //        console.error("Error cargando Jefes:", error);
+    //        return;
+    //    }
+    //
+    //    renderJefes(data);
+    //}
+
+    async function loadJefes() {
+        // 1. Renderizar la lista
+        console.log("Renderizando jefes desde la lista local...");
+        renderJefes(localJefes);
+
+        // 2. ¡NUEVO! Comprobar y ejecutar animación
+        if (animationQueue) {
+            // Usamos un pequeño delay para que el DOM se actualice
+            setTimeout(() => {
+                showDamageHitAnimation(animationQueue.bossId, animationQueue.damage);
+                animationQueue = null; // Limpiar la cola
+            }, 100); // 100ms de delay
+        }
+    }
+
+    /**
+     * Dibuja las tarjetas de los Jefes en la página Home
+     */
+    function renderJefes(jefes) {
+        jefesListContainer.innerHTML = '';
+        if (jefes.length === 0) {
+            jefesListContainer.innerHTML = '<p style="text-align: center; color: #888;">¡No hay exámenes programados! Añade uno con el botón +.</p>';
+            return;
+        }
+
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0); 
+
+        jefes.forEach(jefe => {
+            const card = document.createElement('div');
+            card.classList.add('jefe-item');
+            card.dataset.id = jefe.id; // <-- ¡AÑADE ESTA LÍNEA!
+            
+            // --- Lógica de Fecha (para el texto) ---
+            const examDate = new Date(jefe.exam_date + 'T00:00:00'); 
+            const diffTime = examDate - hoy;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            
+            let countdownText = `¡EN ${diffDays} DÍAS!`;
+            if (diffDays === 1) countdownText = '¡MAÑANA!';
+            else if (diffDays === 0) countdownText = '¡HOY!';
+            else if (diffDays < 0) countdownText = 'RETRASADO';
+            
+            const materiaName = jefe.materias ? jefe.materias.name : 'Materia';
+
+            // --- Lógica de HP (para la barra y el botón) ---
+            const hp_goal = jefe.damage_goal || 300;
+            const hp_dealt = jefe.damage_dealt || 0;
+            const currentHP = hp_goal - hp_dealt;
+            const hpPercentage = Math.max(0, (currentHP / hp_goal) * 100);
+
+            // 1. Dibuja la tarjeta (CON la barra de HP)
+            card.innerHTML = `
+                <div class="jefe-details">
+                    <span class="jefe-name">${jefe.name}</span>
+                    <span class="jefe-sub">Materia: ${materiaName}</span>
+                </div>
+                <div class="jefe-countdown">
+                    <span>${countdownText}</span>
+                </div>
+
+                <div class="jefe-hp-bar-container">
+                    <div class="jefe-hp-bar-fill" style="width: ${hpPercentage}%;"></div>
+                    <span class="jefe-hp-text">HP: ${currentHP} / ${hp_goal}</span>
+                </div>
+            `;
+            
+            // 2. ¡NUEVA LÓGICA DEL BOTÓN!
+            // ¡Solo muestra el botón si el HP es 0 o menos!
+            if (currentHP <= 0) {
+                const completeBtn = document.createElement('button');
+                completeBtn.classList.add('jefe-complete-btn');
+                completeBtn.textContent = '¡K.O.! 💥';
+                
+                completeBtn.dataset.id = jefe.id; 
+                completeBtn.dataset.name = jefe.name;
+
+                completeBtn.addEventListener('click', handleCompleteJefe);
+                
+                card.appendChild(completeBtn); 
+            }
+            
+            jefesListContainer.appendChild(card);
+        });
+    }
+
+    /**
+     * Rellena el dropdown de materias en el modal de "Añadir Jefe"
+     */
+    function populateJefeMateriaDropdown() {
+        // Usamos las materias que ya cargamos en 'localMaterias'
+        selectJefeMateria.innerHTML = '<option value="">-- Elige una materia --</option>';
+        localMaterias.forEach(materia => {
+            const option = document.createElement('option');
+            option.value = materia.id;
+            option.textContent = materia.name;
+            selectJefeMateria.appendChild(option);
+        });
+    }
+
+    /**
+     * Guarda el nuevo Jefe en Supabase
+     */
+    async function handleSaveJefe() {
+        const name = newJefeNameInput.value;
+        const materia_id = selectJefeMateria.value;
+        const exam_date = newJefeDateInput.value;
+        const hp_goal = parseInt(newJefeHpInput.value) || 300; // <-- AÑADE ESTA LÍNEA
+
+        if (!name || !materia_id || !exam_date || hp_goal <= 0) { // <-- MODIFICA ESTA LÍNEA
+            alert("Por favor, completa todos los campos (y HP mayor a 0).");
+            return;
+        }
+
+        // ¡Modificado para que devuelva el objeto creado!
+        const { data: newJefe, error } = await supabase
+            .from('jefes')
+            .insert({
+                user_id: player.id,
+                name: name,
+                materia_id: materia_id,
+                exam_date: exam_date,
+                damage_goal: hp_goal, // <-- AÑADE ESTA LÍNEA
+                damage_dealt: 0      // <-- AÑADE ESTA LÍNEA
+            })
+            .select('id, name, materia_id, exam_date, damage_goal, damage_dealt, materias ( name )') // <-- MODIFICA
+            .single(); // ¡Pedimos el objeto!
+
+        if (error) {
+            console.error("Error guardando Jefe:", error);
+        } else {
+            addJefeModal.style.display = 'none'; // Ocultar modal
+            newJefeNameInput.value = '';
+            selectJefeMateria.selectedIndex = 0;
+            newJefeDateInput.value = '';
+            newJefeHpInput.value = ''; // <-- AÑADE ESTA LÍNEA
+            
+            // ¡NUEVO! Actualizar la lista global y re-renderizar
+            localJefes.push(newJefe);
+            localJefes.sort((a, b) => new Date(a.exam_date) - new Date(b.exam_date)); // Re-ordenar
+            await loadJefes(); // Llama a renderJefes(localJefes)
+            checkGlobalCrisisMode(); // <-- ¡AÑADE ESTA LÍNEA!
+        }
+    }
+
+    // ... aquí termina handleSaveJefe
+
+    /**
+     * ¡NUEVO! Se activa al hacer clic en "Completar Jefe"
+     */
+    async function handleCompleteJefe(event) {
+        // Obtenemos los datos guardados en el botón
+        const jefeId = parseInt(event.target.dataset.id); 
+        const jefeName = event.target.dataset.name;
+        
+        // ¡NUEVO! Guardamos los datos para usarlos después de confirmar
+        confirmKoBtnConfirm.dataset.id = jefeId;
+        confirmKoBtnConfirm.dataset.name = jefeName;
+
+        // 1. Mostramos el MODAL de confirmación (en vez de un 'confirm')
+        confirmKoText.textContent = `¿Estás segura de que quieres dar el GOLPE FINAL al Jefe "${jefeName}"?`;
+        confirmKoModal.style.display = 'flex';
+    }
+
+    /**
+     * ¡NUEVO! Esta función se activa SÓLO si el usuario
+     * hace clic en "¡K.O.!" en el modal de confirmación.
+     */
+    async function executeKOBoss() {
+        // 0. Ocultar modal de confirmación
+        confirmKoModal.style.display = 'none';
+
+        // 1. Recuperar los datos del botón
+        const jefeId = parseInt(confirmKoBtnConfirm.dataset.id);
+        const jefeName = confirmKoBtnConfirm.dataset.name;
+
+        // 2. Definir las Recompensas
+        const REWARD_XP = 500;
+        const REWARD_SINAPSIS = 10;
+
+        try {
+            // 3. Marcar el Jefe como "completado" en Supabase
+            const { error: updateError } = await supabase
+                .from('jefes')
+                .update({ status: 'completado' })
+                .eq('id', jefeId);
+                
+            if (updateError) throw updateError; // ¡El bug debe estar aquí!
+
+            // 4. Dar Recompensas al Jugador
+            await addPlayerXP(REWARD_XP);
+            await addSinapsis(REWARD_SINAPSIS * 60); 
+
+            // 5. Actualizar la lista local de Jefes
+            localJefes = localJefes.filter(jefe => jefe.id !== jefeId);
+
+            // 6. Re-dibujar la lista de Jefes
+            renderJefes(localJefes);
+            checkGlobalCrisisMode();
+
+            // 7. ¡Revisar trofeo!
+            await unlockTrophy('boss_slayer_1');
+
+            // 8. ¡NUEVO! Mensaje de Éxito (Modal)
+            alertModalContent.className = 'modal-content card alert-modal-content success';
+            alertModalTitle.textContent = '¡K.O.! 💥';
+            alertModalIcon.textContent = '🏆';
+            alertModalMessage.textContent = `¡Has derrotado al Jefe "${jefeName}"!\n\nRecompensa:\n+${REWARD_XP} XP\n+${REWARD_SINAPSIS} Sinapsis (🧬)`;
+            alertModal.style.display = 'flex';
+
+        } catch (error) {
+            console.error("Error al completar el Jefe:", error);
+            
+            // 9. ¡NUEVO! Mensaje de Error (Modal)
+            alertModalContent.className = 'modal-content card alert-modal-content error';
+            alertModalTitle.textContent = '¡Error!';
+            alertModalIcon.textContent = '❌';
+            alertModalMessage.textContent = 'Hubo un error al reclamar tu recompensa. (Revisa que RLS esté apagado en todas las tablas e intenta de nuevo).';
+            alertModal.style.display = 'flex';
+        }
+    }
+
+    // ... aquí termina handleCompleteJefe
+    
+
+    /**
+     * ¡NUEVO! Revisa TODOS los jefes activos
+     * y activa o desactiva el "Glow" global (crisis-mode-active)
+     */
+    function checkGlobalCrisisMode() {
+        const hoy = new Date();
+        const CRITIC_DAYS = 7;
+        let isCrisis = false; // Asumimos que no hay crisis
+
+        // 1. Guardamos el estado anterior
+        const wasCrisisActive = isCrisisModeCurrentlyActive;
+
+        // 2. Buscamos si CUALQUIER jefe está en modo crisis
+        for (const jefe of localJefes) {
+            const examDate = new Date(jefe.exam_date + 'T00:00:00');
+            const diffTime = examDate - hoy;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays >= 0 && diffDays <= CRITIC_DAYS) {
+                isCrisis = true; 
+                break; 
+            }
+        }
+
+        // 3. Actualizamos el estado global
+        isCrisisModeCurrentlyActive = isCrisis;
+
+        // 4. Comparamos el estado anterior con el nuevo
+        if (!wasCrisisActive && isCrisisModeCurrentlyActive) {
+            // ¡NO estaba activo, PERO AHORA SÍ!
+            document.body.classList.add('crisis-mode-active');
+            console.log("¡MODO CRISIS GLOBAL ACTIVADO!");
+            
+            // ¡MOSTRAMOS EL POP-UP!
+            // (Usamos un delay para que el glow aparezca primero)
+            setTimeout(() => {
+                crisisModeModal.style.display = 'flex';
+            }, 500);
+
+        } else if (wasCrisisActive && !isCrisisModeCurrentlyActive) {
+            // SÍ estaba activo, PERO YA NO
+            document.body.classList.remove('crisis-mode-active');
+            console.log("Modo crisis global desactivado.");
+        } else if (isCrisisModeCurrentlyActive) {
+            // SÍ estaba activo y SIGUE activo (no hacemos nada, solo nos aseguramos)
+            document.body.classList.add('crisis-mode-active');
+        }
+    }
+
+
+    // ... (aquí termina checkGlobalCrisisMode)
+    
+
+    /**
+     * ¡NUEVO! Muestra la animación de "golpe" sobre la tarjeta del jefe
+     */
+    function showDamageHitAnimation(bossId, damage) {
+        // 1. Encontrar la tarjeta del jefe
+        const jefeCard = document.querySelector(`.jefe-item[data-id="${bossId}"]`);
+        if (!jefeCard) {
+            console.warn("No se encontró la tarjeta del jefe para la animación.");
+            return;
+        }
+
+        // 2. Obtener la posición de la tarjeta
+        const rect = jefeCard.getBoundingClientRect();
+        
+        // 3. Posicionar el texto de daño
+        // (lo centraremos horizontalmente y lo pondremos en medio verticalmente)
+        damageHitText.style.left = `${rect.left + (rect.width / 2) - 60}px`; // Ajustado para centrar
+        damageHitText.style.top = `${rect.top + (rect.height / 2) - 40}px`; // Ajustado para centrar
+        damageHitText.textContent = `-${damage} HP!`;
+
+        // 4. Mostrar el modal de animación
+        damageHitModal.style.display = 'flex';
+
+        // 5. Ocultarlo cuando termine la animación (1.5s)
+        setTimeout(() => {
+            damageHitModal.style.display = 'none';
+        }, 1500);
+    }
+
     // =========================================================================
-    // LÓGICA DE XP Y SKILLS (Sin cambios)
+    // LÓGICA DE XP Y SKILLS
     // =========================================================================
     async function addPlayerXP(amount) {
         let currentXp = player.xp + amount; let currentLevel = player.level; let currentXpToNext = player.xp_to_next_level; let levelUp = false;
@@ -373,9 +983,58 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error al añadir XP a las habilidades:", error);
         }
     }
-    
+
     // =========================================================================
-    // ¡MOTOR DE LOGROS ACTUALIZADO!
+    // LÓGICA DE SINAPSIS
+    // =========================================================================
+    const SINAPSIS_PER_MINUTE = 60; // 1 Sinapsis por cada 60 minutos
+
+    async function addSinapsis(minutes) {
+        const currentProgress = player.sinapsis_progress;
+        const totalMinutes = currentProgress + minutes;
+        
+        let newSinapsis = 0;
+        let remainingProgress = totalMinutes;
+
+        // Calcular cuántas sinapsis completamos
+        while (remainingProgress >= SINAPSIS_PER_MINUTE) {
+            remainingProgress -= SINAPSIS_PER_MINUTE;
+            newSinapsis++;
+        }
+        
+        const newSinapsisCount = player.sinapsis + newSinapsis;
+
+        // Si ganamos algo, actualizar el perfil
+        if (newSinapsis > 0 || remainingProgress !== currentProgress) {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ 
+                    sinapsis: newSinapsisCount,
+                    sinapsis_progress: remainingProgress
+                })
+                .eq('id', player.id);
+
+            if (error) {
+                console.error("Error al guardar sinapsis:", error);
+                return;
+            }
+
+            // Actualizar el estado local del jugador
+            player.sinapsis = newSinapsisCount;
+            player.sinapsis_progress = remainingProgress;
+            
+            console.log(`Ganadas ${newSinapsis} Sinapsis. Total: ${player.sinapsis}`);
+
+            // Actualizar la vista de la tienda (si estamos en ella)
+            if (document.getElementById('page-store').classList.contains('active')) {
+                renderStore(); 
+            }
+        }
+    }
+
+
+    // =========================================================================
+    // MOTOR DE LOGROS
     // =========================================================================
     function hasTrophy(trophyId) {
         return localTrophies.some(t => t.trophy_id === trophyId);
@@ -392,21 +1051,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!trophy) { console.error(`Error: Trofeo con ID ${trophyId} no encontrado.`); return; }
         const { data: newTrophy, error } = await supabase.from('trophies_unlocked').insert({ user_id: player.id, trophy_id: trophy.id }).select().single();
         if (error) { console.error("Error al guardar trofeo en Supabase:", error); return; }
-        localTrophies.push(newTrophy); // ¡Importante! Actualizar la lista local
+        localTrophies.push(newTrophy);
         showBadgeUnlockModal(trophy);
     }
 
-    // Revisa badges de evento (al registrar)
     async function checkEventBadges(newLog) {
         if (allLogs.length === 1) { await unlockTrophy('first_log'); }
         if (newLog.minutes >= 200) { await unlockTrophy('marathon'); }
         if (newLog.minutes <= 15) { await unlockTrophy('micro_dose'); }
         const hour = new Date(newLog.created_at).getHours();
         if (hour >= 2 && hour < 4) { await unlockTrophy('dracula'); }
-        // (Faltan: sprint, focused, chaos, multitask)
     }
     
-    // Revisa badges de Nivel de Jugador (al subir de nivel)
     async function checkPlayerLevelBadges() {
         let newTrophiesUnlocked = false;
         const levelTrophies = allTrophies.filter(t => t.id.startsWith('level_')); 
@@ -417,71 +1073,203 @@ document.addEventListener('DOMContentLoaded', () => {
                 newTrophiesUnlocked = true;
             }
         }
-        if (newTrophiesUnlocked) { 
-            renderTrophies(); 
-        }
+        if (newTrophiesUnlocked) { renderTrophies(); }
     }
 
-    // ¡NUEVO! Revisa badges de Estadísticas (al ver el perfil)
     async function checkStatsBadges(logs, streak) {
-        console.log("Revisando badges de estadísticas...");
-        let newTrophiesUnlocked = false; // Para saber si re-dibujamos
+        // (Lógica de badges basada en estadísticas totales)
         const totalMinutes = logs.reduce((sum, log) => sum + log.minutes, 0);
         const totalSessions = logs.length;
+        if (totalMinutes >= 1000 && !hasTrophy('minutes_1k')) { await unlockTrophy('minutes_1k'); }
+        if (totalMinutes >= 5000 && !hasTrophy('minutes_5k')) { await unlockTrophy('minutes_5k'); }
+        if (totalMinutes >= 10000 && !hasTrophy('minutes_10k')) { await unlockTrophy('minutes_10k'); }
+        if (totalSessions >= 100 && !hasTrophy('sessions_100')) { await unlockTrophy('sessions_100'); }
+        if (streak >= 5 && !hasTrophy('streak_5')) { await unlockTrophy('streak_5'); }
+        if (streak >= 30 && !hasTrophy('streak_30')) { await unlockTrophy('streak_30'); }
+        if (streak >= 365 && !hasTrophy('streak_365')) { await unlockTrophy('streak_365'); }
 
-        // --- Badges de Minutos ---
-        if (totalMinutes >= 1000 && !hasTrophy('minutes_1k')) { await unlockTrophy('minutes_1k'); newTrophiesUnlocked = true; }
-        if (totalMinutes >= 5000 && !hasTrophy('minutes_5k')) { await unlockTrophy('minutes_5k'); newTrophiesUnlocked = true; }
-        if (totalMinutes >= 10000 && !hasTrophy('minutes_10k')) { await unlockTrophy('minutes_10k'); newTrophiesUnlocked = true; }
+        const typeCounts = logs.reduce((acc, log) => { acc[log.study_type] = (acc[log.study_type] || 0) + 1; return acc; }, {});
+        if (typeCounts['Anki'] >= 50) { await unlockTrophy('anki_king'); }
+        if (typeCounts['Libro'] >= 20) { await unlockTrophy('lector'); }
+        if (typeCounts['Video'] >= 30) { await unlockTrophy('cinefilo'); }
+
+        const materiaMinutes = logs.reduce((acc, log) => { acc[log.materia_id] = (acc[log.materia_id] || 0) + log.minutes; return acc; }, {});
+        const temaMinutes = logs.reduce((acc, log) => { acc[log.tema_id] = (acc[log.tema_id] || 0) + log.minutes; return acc; }, {});
+        if (Object.values(materiaMinutes).some(min => min >= 1000)) { await unlockTrophy('specialist_1k'); }
+        if (Object.values(temaMinutes).some(min => min >= 1000)) { await unlockTrophy('tema_1k_mins'); }
+
+        renderTrophies();
+    }
+
+
+    // =========================================================================
+    // SECCIÓN DE TIENDA (NUEVA)
+    // =========================================================================
+    
+    // Lista Maestra de Items
+    const storeItems = [
+        { id: 'cafe_doble', name: 'Dosis de Cafecito☕️', cost: 5, icon: '☕️', effect: '1.5x XP en tu próxima sesión.', type: 'xp_buff' },
+        { id: 'monster', name: 'Dosis de MONSTER⚡️', cost: 7, icon: '⚡️', effect: '2x XP en tu próxima sesión.', type: 'xp_buff' },
+        { id: 'mix', name: 'Mix☕️⚡️', cost: 15, icon: '✨', effect: '3x XP en tu próxima sesión.', type: 'xp_buff' },
+        { id: 'specialist', name: 'Dosis de Especialista', cost: 12, icon: '🎯', effect: '3x XP en tu próxima sesión, en una Materia a elegir.', type: 'materia_buff' },
+        { id: 'frozen_time', name: 'Frozen in Time', cost: 25, icon: '🧊', effect: 'Protege tu racha de una caída (1 uso).', type: 'protection' },
+        { id: 'giratiempo', name: 'Giratiempo', cost: 50, icon: '⏳', effect: 'Repara una racha perdida (1 uso).', type: 'repair' },
+    ];
+
+    // Carga la página de la tienda
+    async function loadStore() {
+        console.log("Cargando tienda...");
+        // Actualizar la info del jugador para tener las sinapsis actualizadas
+        await updatePlayerInfo(); 
+        renderStoreDisplay();
+        renderStoreItems();
+    }
+
+    // Dibuja el contador de sinapsis
+    function renderStoreDisplay() {
+        const currentSinapsis = player.sinapsis || 0;
+        const currentProgress = player.sinapsis_progress || 0;
+        const SINAPSIS_GOAL = 60; // 60 minutos para 1 sinapsis
+
+        const progressPercentage = (currentProgress / SINAPSIS_GOAL) * 100;
+
+        document.getElementById('sinapsis-count-display').textContent = currentSinapsis;
+        document.getElementById('sinapsis-bar-fill').style.width = `${progressPercentage}%`;
+        document.getElementById('sinapsis-bar-text').textContent = `${currentProgress}/${SINAPSIS_GOAL} min para 1 🧬`;
+    }
+
+    // Dibuja los items de la tienda
+    function renderStoreItems() {
+        const container = document.getElementById('store-items-container');
+        container.innerHTML = '';
+        const currentSinapsis = player.sinapsis || 0;
+
+        storeItems.forEach(item => {
+            const itemElement = document.createElement('div');
+            itemElement.classList.add('materia-item');
+            itemElement.classList.add('store-item'); // Nuevo estilo
+            
+            const canAfford = currentSinapsis >= item.cost;
+            
+            itemElement.innerHTML = `
+                <div class="materia-header" style="margin-bottom: 5px;">
+                    <span class="materia-name">${item.icon} ${item.name}</span>
+                    <span class="materia-level" style="color: ${canAfford ? '#C2F0C2' : '#FAD1E6'};">${item.cost} 🧬</span>
+                </div>
+                <div style="font-size: 0.9em; color: #777;">${item.effect}</div>
+                <button 
+                    class="btn-save" 
+                    data-id="${item.id}"
+                    data-cost="${item.cost}"
+                    ${!canAfford ? 'disabled' : ''}
+                    style="margin-top: 10px; background-color: ${!canAfford ? '#EEE' : '#A7D8F9'}; color: ${!canAfford ? '#999' : '#fff'};"
+                >
+                    ${!canAfford ? `Faltan ${item.cost - currentSinapsis} 🧬` : 'Comprar Dosis'}
+                </button>
+            `;
+            container.appendChild(itemElement);
+        });
         
-        // --- Badges de Sesiones ---
-        if (totalSessions >= 100 && !hasTrophy('sessions_100')) { await unlockTrophy('sessions_100'); newTrophiesUnlocked = true; }
+        // Añadir el event listener a los botones de compra después de que se dibujen
+        container.querySelectorAll('.btn-save').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const itemId = e.target.dataset.id;
+                const cost = parseInt(e.target.dataset.cost);
+                showBuyConfirmation(itemId, cost);
+            });
+        });
+    }
 
-        // --- Badges de Racha ---
-        if (streak >= 5 && !hasTrophy('streak_5')) { await unlockTrophy('streak_5'); newTrophiesUnlocked = true; }
-        if (streak >= 30 && !hasTrophy('streak_30')) { await unlockTrophy('streak_30'); newTrophiesUnlocked = true; }
-        if (streak >= 365 && !hasTrophy('streak_365')) { await unlockTrophy('streak_365'); newTrophiesUnlocked = true; }
+    // Muestra el modal de confirmación de compra
+    function showBuyConfirmation(itemId, cost) {
+        const item = storeItems.find(i => i.id === itemId);
         
-        // --- Badges de Tipo de Estudio ---
-        const typeCounts = logs.reduce((acc, log) => {
-            acc[log.study_type] = (acc[log.study_type] || 0) + 1;
-            return acc;
-        }, {});
-        if (typeCounts['Anki'] >= 50 && !hasTrophy('anki_king')) { await unlockTrophy('anki_king'); newTrophiesUnlocked = true; }
-        if (typeCounts['Libro'] >= 20 && !hasTrophy('lector')) { await unlockTrophy('lector'); newTrophiesUnlocked = true; }
-        if (typeCounts['Video'] >= 30 && !hasTrophy('cinefilo')) { await unlockTrophy('cinefilo'); newTrophiesUnlocked = true; }
+        document.getElementById('buy-modal-title').textContent = `¿Confirmar compra de ${item.name}?`;
+        document.getElementById('buy-modal-message').innerHTML = `Esto costará **${cost} Sinapsis (🧬)**. <br><br>Efecto: ${item.effect}`;
+        
+        const confirmBtn = document.getElementById('confirm-buy-btn');
+        confirmBtn.dataset.itemId = itemId;
+        confirmBtn.dataset.cost = cost;
 
-        // --- Badges de Hora del Día ---
-        const hourCounts = logs.reduce((acc, log) => {
-            const hour = new Date(log.created_at).getHours();
-            if (hour >= 22) acc.night_owl = (acc.night_owl || 0) + 1; // 10 PM en adelante
-            if (hour < 8) acc.early_bird = (acc.early_bird || 0) + 1; // Antes de las 8 AM
-            return acc;
-        }, {});
-        if (hourCounts.night_owl >= 10 && !hasTrophy('night_owl')) { await unlockTrophy('night_owl'); newTrophiesUnlocked = true; }
-        if (hourCounts.early_bird >= 10 && !hasTrophy('early_bird')) { await unlockTrophy('early_bird'); newTrophiesUnlocked = true; }
-
-        // --- Badges de Minutos por Tema/Materia ---
-        const materiaMinutes = logs.reduce((acc, log) => {
-            acc[log.materia_id] = (acc[log.materia_id] || 0) + log.minutes;
-            return acc;
-        }, {});
-        const temaMinutes = logs.reduce((acc, log) => {
-            acc[log.tema_id] = (acc[log.tema_id] || 0) + log.minutes;
-            return acc;
-        }, {});
-
-        if (Object.values(materiaMinutes).some(min => min >= 1000) && !hasTrophy('specialist_1k')) {
-            await unlockTrophy('specialist_1k'); newTrophiesUnlocked = true;
+        // Lógica especial para el item "Especialista"
+        if (item.type === 'materia_buff') {
+            document.getElementById('buy-materia-select-container').style.display = 'block';
+            const select = document.getElementById('buy-materia-select');
+            select.innerHTML = ''; // Limpiar
+            localMaterias.forEach(m => {
+                const option = document.createElement('option');
+                option.value = m.id;
+                option.textContent = m.name;
+                select.appendChild(option);
+            });
+        } else {
+            document.getElementById('buy-materia-select-container').style.display = 'none';
         }
-        if (Object.values(temaMinutes).some(min => min >= 1000) && !hasTrophy('tema_1k_mins')) {
-            await unlockTrophy('tema_1k_mins'); newTrophiesUnlocked = true;
+
+        document.getElementById('buy-modal').style.display = 'flex';
+    }
+
+    // Ejecuta la compra
+    async function executeBuy(itemId, cost) {
+        const materiaSelect = document.getElementById('buy-materia-select');
+        const selectedMateriaId = materiaSelect.value;
+        const item = storeItems.find(i => i.id === itemId);
+
+        document.getElementById('buy-modal').style.display = 'none';
+
+        if (player.sinapsis < cost) {
+            alertModalContent.className = 'modal-content card alert-modal-content error';
+            alertModalTitle.textContent = '¡Fondos Insuficientes!';
+            alertModalIcon.textContent = '❌';
+            alertModalMessage.textContent = `¡Oops! No tienes suficientes Sinapsis (🧬) para comprar "${item.name}".`;
+            alertModal.style.display = 'flex';
+            return;
+        }
+
+        let buffValue = itemId;
+        if (item.type === 'materia_buff') {
+            if (!selectedMateriaId) {
+                alertModalContent.className = 'modal-content card alert-modal-content error';
+                alertModalTitle.textContent = '¡Acción Requerida!';
+                alertModalIcon.textContent = '🎯';
+                alertModalMessage.textContent = 'Por favor, elige una materia para aplicar este buff de especialista.';
+                alertModal.style.display = 'flex';
+                 return;
+            }
+            const selectedMateriaName = localMaterias.find(m => m.id == selectedMateriaId).name;
+            buffValue = `specialist_${selectedMateriaId}_${selectedMateriaName}`; // ej. specialist_34_Fisiologia II
         }
         
-        // (Faltan: weekender, work_week, poliglota, archivist, tema_100, materia_lvl_10_x5)
+        // 1. Descontar sinapsis y aplicar el buff
+        const newSinapsisCount = player.sinapsis - cost;
+        const { error } = await supabase
+            .from('profiles')
+            .update({ 
+                sinapsis: newSinapsisCount,
+                active_buff: buffValue,
+                // TODO: Añadir lógica para streak_protection y streak_repair
+            })
+            .eq('id', player.id);
 
-        if (newTrophiesUnlocked) {
-            renderTrophies(); // Re-dibuja la lista de trofeos si ganamos algo
+        if (error) {
+            console.error('Error al ejecutar compra:', error);
+            alertModalContent.className = 'modal-content card alert-modal-content error';
+            alertModalTitle.textContent = '¡Error!';
+            alertModalIcon.textContent = '❌';
+            alertModalMessage.textContent = 'Ocurrió un error al procesar la compra. Revisa tu conexión e intenta de nuevo.';
+            alertModal.style.display = 'flex';
+        } else {
+            // 2. Éxito: Actualizar el estado local y las vistas
+            player.sinapsis = newSinapsisCount;
+            player.active_buff = buffValue;
+            
+            alertModalContent.className = 'modal-content card alert-modal-content success';
+            alertModalTitle.textContent = '¡Compra Exitosa!';
+            alertModalIcon.textContent = '🛒';
+            alertModalMessage.textContent = `¡Buff "${item.name}" activado! Se aplicará en tu próxima sesión de estudio.`;
+            alertModal.style.display = 'flex';
+            renderStoreDisplay();
+            renderStoreItems();
         }
     }
 
@@ -539,9 +1327,21 @@ document.addEventListener('DOMContentLoaded', () => {
         loadTemas(materia.id); 
     }
     async function loadTemas(materiaId) {
-        const { data, error } = await supabase.from('temas').select('*').eq('user_id', player.id).eq('materia_id', materiaId).order('name', { ascending: true });
-        if (error) { console.error("Error cargando temas:", error); } 
-        else { localTemas = data || []; renderTemas(); }
+        // La consulta ahora filtra por materia_id
+        const { data, error } = await supabase
+            .from('temas')
+            .select('*')
+            .eq('user_id', player.id)
+            .eq('materia_id', materiaId) // <-- ¡ESTA ES LA LÍNEA CLAVE!
+            .order('name', { ascending: true });
+
+        if (error) { 
+            console.error("Error cargando temas:", error); 
+        } else { 
+            // Guardamos solo los temas de esta materia en 'localTemas'
+            localTemas = data || []; 
+            renderTemas(); 
+        }
     }
     async function handleSaveTema() {
         const newName = newTemaNameInput.value;
@@ -581,18 +1381,175 @@ document.addEventListener('DOMContentLoaded', () => {
             temasListContainer.appendChild(temaElement);
         });
     }
+    // =========================================================================
+    // FUNCIONES DE GRÁFICOS (Chart.js)
+    // =========================================================================
+    
+    // Función de ayuda para los colores
+    function getChartColors(count) {
+        const colors = [
+            '#A7D8F9', '#C2F0C2', '#FAD1E6', '#FDFD96', '#FDBB2D',
+            '#FFB347', '#FF6961', '#B19CD9', '#77DD77', '#AEC6CF'
+        ];
+        // Repetir colores si hay más datos que colores
+        return Array.from({ length: count }, (_, i) => colors[i % colors.length]);
+    }
+
+    function renderStudyTypeChart(logs) {
+        if (!logs || logs.length === 0) return;
+
+        // 1. Agrupar datos
+        const minutesPerType = logs.reduce((acc, log) => {
+            acc[log.study_type] = (acc[log.study_type] || 0) + log.minutes;
+            return acc;
+        }, {});
+
+        const labels = Object.keys(minutesPerType);
+        const data = Object.values(minutesPerType);
+        const colors = getChartColors(labels.length);
+
+        // 2. Destruir gráfico viejo si existe
+        if (studyTypeChart) {
+            studyTypeChart.destroy();
+        }
+
+        // 3. Crear gráfico nuevo
+        studyTypeChart = new Chart(studyTypeChartCtx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { family: 'Nunito', weight: '700' },
+                            color: '#555'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderMateriaMinutesChart(logs) {
+        if (!logs || logs.length === 0 || !localMaterias) return;
+
+        // 1. Crear un mapa de ID -> Nombre de Materia
+        const materiasMap = localMaterias.reduce((acc, m) => {
+            acc[m.id] = m.name;
+            return acc;
+        }, {});
+
+        // 2. Agrupar datos
+        const minutesPerMateria = logs.reduce((acc, log) => {
+            const materiaName = materiasMap[log.materia_id] || 'Materia Desconocida';
+            acc[materiaName] = (acc[materiaName] || 0) + log.minutes;
+            return acc;
+        }, {});
+
+        // 3. Filtrar materias con 0 minutos
+        const labels = Object.keys(minutesPerMateria).filter(label => minutesPerMateria[label] > 0);
+        const data = labels.map(label => minutesPerMateria[label]);
+        const colors = getChartColors(labels.length);
+
+        // 4. Destruir gráfico viejo
+        if (materiaMinutesChart) {
+            materiaMinutesChart.destroy();
+        }
+
+        // 5. Crear gráfico nuevo
+        materiaMinutesChart = new Chart(materiaMinutesChartCtx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { family: 'Nunito', weight: '700' },
+                            color: '#555'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderStudyHourChart(logs) {
+        if (!logs || logs.length === 0) return;
+
+        // 1. Crear un array de 24 horas, inicializado en 0
+        const hours = Array(24).fill(0);
+        
+        // 2. Agrupar datos
+        logs.forEach(log => {
+            const hour = new Date(log.created_at).getHours();
+            hours[hour] += log.minutes;
+        });
+
+        // 3. Destruir gráfico viejo
+        if (studyHourChart) {
+            studyHourChart.destroy();
+        }
+
+        // 4. Crear gráfico nuevo
+        studyHourChart = new Chart(studyHourChartCtx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+                datasets: [{
+                    label: 'Minutos Estudiados',
+                    data: hours,
+                    backgroundColor: '#A7D8F9',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { display: false },
+                        ticks: { color: '#888', font: { family: 'Nunito' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#888', font: { family: 'Nunito' } }
+                    }
+                }
+            }
+        });
+    }
+
 
     // =========================================================================
     // SECCIÓN DE PERFIL (ESTADÍSTICAS)
     // =========================================================================
     async function loadProfileStats() {
-        console.log("Cargando estadísticas del perfil...");
-
-        // 1. Cargar todos los logs de estudio
-        const { data: logs, error } = await supabase
-            .from('study_logs')
-            .select('minutes, study_type, created_at, materia_id, tema_id, materias ( name )') 
-            .eq('user_id', player.id);
+        // ... (No hay cambios en esta función) ...
+        const { data: logs, error } = await supabase.from('study_logs').select('minutes, study_type, created_at, materia_id, tema_id, materias ( name )').eq('user_id', player.id);
         if (error) {
             console.error("Error cargando estadísticas:", error);
             totalMinutesDisplay.textContent = '-'; totalSessionsDisplay.textContent = '-'; streakDisplay.textContent = '🔥 -'; 
@@ -603,194 +1560,90 @@ document.addEventListener('DOMContentLoaded', () => {
         totalMinutesDisplay.textContent = totalMinutes;
         totalSessionsDisplay.textContent = allLogs.length; 
         
-        // 2. Calcular Racha de Días
         const { data: streak, error: streakError } = await supabase.rpc('get_current_streak', { p_user_id: player.id });
         let currentStreak = 0;
-        if (streakError) {
-            console.error("Error calculando racha:", streakError);
-            streakDisplay.textContent = '🔥 -';
-        } else {
-            currentStreak = streak;
-            streakDisplay.textContent = `🔥 ${currentStreak}`; 
-            streakDisplay.classList.add('streak'); 
-        }
+        if (streakError) { console.error("Error calculando racha:", streakError); streakDisplay.textContent = '🔥 -'; } 
+        else { currentStreak = streak; streakDisplay.textContent = `🔥 ${currentStreak}`; streakDisplay.classList.add('streak'); }
 
-        // 3. Renderizar gráficos
         renderStudyTypeChart(allLogs);
         renderMateriaMinutesChart(allLogs); 
         renderStudyHourChart(allLogs); 
-
-        // 4. Renderizar Trofeos
         renderTrophies();
-
-        // 5. ¡REVISAR TODOS LOS BADGES AHORA QUE TENEMOS LOS DATOS!
         await checkStatsBadges(allLogs, currentStreak);
     }
-
-    function renderStudyTypeChart(logs) {
-        const stats = {}; 
-        logs.forEach(log => {
-            const type = log.study_type;
-            const minutes = log.minutes;
-            if (stats[type]) { stats[type] += minutes; } else { stats[type] = minutes; }
-        });
-        const labels = Object.keys(stats); 
-        const data = Object.values(stats); 
-        const colors = [ '#A7D8F9', '#C2F0C2', '#FDFD96', '#FAD1E6', '#BDB2FF', '#FFDAB9' ];
-
-        if (studyTypeChart) { studyTypeChart.destroy(); }
-        studyTypeChart = new Chart(studyTypeChartCtx, {
-            type: 'doughnut', 
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Minutos por Tipo',
-                    data: data,
-                    backgroundColor: colors,
-                    borderColor: '#FFFBF5',
-                    borderWidth: 3
-                }]
-            },
-            options: { responsive: true, plugins: { legend: { position: 'top', labels: { font: { family: "'Nunito', sans-serif", weight: '700' } } } } }
-        });
-    }
-    
-    function renderMateriaMinutesChart(logs) {
-        const stats = {}; 
-        logs.forEach(log => {
-            const materiaName = log.materias ? log.materias.name : 'Otra';
-            const minutes = log.minutes;
-            if (stats[materiaName]) { stats[materiaName] += minutes; } 
-            else { stats[materiaName] = minutes; }
-        });
-        const labels = Object.keys(stats); 
-        const data = Object.values(stats); 
-        const colors = [ '#FAD1E6', '#BDB2FF', '#FFDAB9', '#A7D8F9', '#C2F0C2', '#FDFD96' ];
-        if (materiaMinutesChart) { materiaMinutesChart.destroy(); }
-        materiaMinutesChart = new Chart(materiaMinutesChartCtx, {
-            type: 'doughnut', 
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Minutos por Materia',
-                    data: data,
-                    backgroundColor: colors,
-                    borderColor: '#FFFBF5',
-                    borderWidth: 3
-                }]
-            },
-            options: { responsive: true, plugins: { legend: { position: 'top', labels: { font: { family: "'Nunito', sans-serif", weight: '700' } } } } }
-        });
-    }
-
-    function renderStudyHourChart(logs) {
-        const stats = Array(24).fill(0);
-        logs.forEach(log => {
-            const hour = new Date(log.created_at).getHours(); 
-            stats[hour] += log.minutes; 
-        });
-        const labels = [
-            '12am', '1am', '2am', '3am', '4am', '5am', '6am', '7am', '8am', '9am', '10am', '11am',
-            '12pm', '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm', '9pm', '10pm', '11pm'
-        ];
-        const data = stats; 
-        
-        if (studyHourChart) {
-            studyHourChart.destroy();
-        }
-        studyHourChart = new Chart(studyHourChartCtx, {
-            type: 'bar', 
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Minutos Estudiados',
-                    data: data,
-                    backgroundColor: '#A7D8F9', 
-                    borderRadius: 5,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, 
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, ticks: { font: { family: "'Nunito', sans-serif", weight: '700' } } },
-                    x: { ticks: { font: { family: "'Nunito', sans-serif", weight: '700' } } }
-                }
-            }
-        });
-    }
+    // ... (renderizado de gráficos) ...
 
     // =========================================================================
     // FUNCIONES DE UI (RENDERIZADO)
     // =========================================================================
     function showApp() { authSection.style.display = 'none'; appSection.style.display = 'block'; showPage('page-home'); }
     function showAuth() { authSection.style.display = 'block'; appSection.style.display = 'none'; }
+
+    // =BEGGIN: ¡PEGA LA FUNCIÓN QUE FALTA AQUÍ! =======================
+
+    /**
+     * Muestra una página específica y oculta las demás.
+     * También actualiza el estado activo de la barra de navegación.
+     */
+    function showPage(pageId) {
+        // 1. Ocultar todas las páginas
+        pageContents.forEach(page => {
+            page.classList.remove('active');
+        });
+
+        // 2. Mostrar la página deseada
+        const pageToShow = document.getElementById(pageId);
+        if (pageToShow) {
+            pageToShow.classList.add('active');
+        } else {
+            console.warn(`No se encontró la página con id: ${pageId}`);
+        }
+
+        // 3. Actualizar los botones de navegación
+        // Extraer el nombre de la página (ej. "home" de "page-home")
+        let navId = pageId.split('-')[1]; // "home", "skills", "store", "profile"
+        
+        // Manejar el caso especial de "temas" que usa el nav de "skills"
+        let activeNavId = `nav-${navId}`;
+        if (pageId === 'page-temas') {
+            activeNavId = 'nav-skills';
+        }
+
+        navButtons.forEach(button => {
+            button.classList.toggle('active', button.id === activeNavId);
+        });
+
+        // 4. Ocultar la navegación si estamos en la página de temas
+        if (pageId === 'page-temas') {
+            bottomNav.classList.add('hidden');
+        } else {
+            bottomNav.classList.remove('hidden');
+        }
+    }
+
+    // =END: AQUÍ TERMINA LA NUEVA FUNCIÓN =============================
+
+
     function updatePlayerInfo() {
+        // 1. Actualizar Nivel y XP
         playerLevelSpan.textContent = `Nvl ${player.level}`; 
         const xpPercentage = (player.xp / player.xp_to_next_level) * 100;
         xpBarFill.style.width = `${xpPercentage}%`;
         xpText.textContent = `${player.xp}/${player.xp_to_next_level} XP`;
-    }
-    
-    function renderTrophies() {
-        trophyDisplay.innerHTML = ''; 
-        const trophyElements = allTrophies.map(trophy => {
-            const isUnlocked = localTrophies.some(unlocked => unlocked.trophy_id === trophy.id);
-            const element = document.createElement('div');
-            element.classList.add('trophy-item');
-            if (isUnlocked) {
-                element.classList.add('unlocked');
-            }
-            element.innerHTML = `
-                <span class="trophy-icon">${trophy.icon}</span>
-                <div class="trophy-name">${trophy.name}</div>
-            `;
-            element.addEventListener('click', () => showTrophyDetails(trophy, isUnlocked));
-            return element;
-        });
-        const unlockedTrophies = trophyElements.filter(el => el.classList.contains('unlocked'));
-        const lockedTrophies = trophyElements.filter(el => !el.classList.contains('unlocked'));
-        unlockedTrophies.forEach(el => trophyDisplay.appendChild(el));
-        lockedTrophies.forEach(el => trophyDisplay.appendChild(el));
-    }
-
-    function showTrophyDetails(trophy, isUnlocked) {
-        trophyModalIcon.textContent = trophy.icon;
-        trophyModalName.textContent = trophy.name;
-        trophyModalDesc.textContent = trophy.description;
-        trophyModalContent.classList.remove('unlocked', 'locked');
         
-        if (isUnlocked) {
-            trophyModalContent.classList.add('unlocked');
-            trophyModalStatus.textContent = '¡GANADO!';
-            trophyModalStatus.className = 'trophy-status-unlocked';
-        } else {
-            trophyModalContent.classList.add('locked');
-            trophyModalStatus.textContent = 'BLOQUEADO';
-            trophyModalStatus.className = 'trophy-status-locked';
-        }
-        trophyDetailsModal.style.display = 'flex';
-    }
-
-    function showLevelUpModal() { levelUpModal.style.display = 'flex'; modalNewLevel.textContent = `Nivel ${player.level}`; modalNewTitle.textContent = levelTitles[player.level - 1] || levelTitles[levelTitles.length - 1]; }
-
-
-    function showPage(pageId) {
-        pageContents.forEach(page => { page.classList.remove('active'); });
-        const pageToShow = document.getElementById(pageId);
-        if (pageToShow) { pageToShow.classList.add('active'); }
-        if (pageId === 'page-temas') { bottomNav.classList.add('hidden'); } 
-        else { bottomNav.classList.remove('hidden'); }
-        if (pageId !== 'page-temas') {
-            navButtons.forEach(button => { button.classList.remove('active'); });
-            const pageName = pageId.split('-')[1];
-            const activeButton = document.getElementById(`nav-${pageName}`);
-            if (activeButton) { activeButton.classList.add('active'); }
+        // 2. Actualizar Sinapsis (en Home)
+        // Buscamos los NUEVOS IDs que pusimos en index.html
+        const sinapsisBarFillHome = document.getElementById('sinapsis-bar-fill-home');
+        const sinapsisBarTextHome = document.getElementById('sinapsis-bar-text-home');
+        
+        if (sinapsisBarFillHome && sinapsisBarTextHome) {
+             const progressPercentage = (player.sinapsis_progress / 60) * 100;
+             sinapsisBarFillHome.style.width = `${progressPercentage}%`;
+             sinapsisBarTextHome.textContent = `${player.sinapsis_progress}/60 min para 1 🧬`;
         }
     }
-
-
+    // ... (renderizado de trofeos y modales) ...
+    
     // =========================================================================
     // EVENT LISTENERS
     // =========================================================================
@@ -798,11 +1651,28 @@ document.addEventListener('DOMContentLoaded', () => {
     loginBtn.addEventListener('click', handleLogin);
     signupBtn.addEventListener('click', handleSignUp);
     logoutBtn.addEventListener('click', handleLogout);
-    // --- Página Home (Registro)
-    selectMateria.addEventListener('change', handleMateriaSelect);
-    logStudyBtn.addEventListener('click', handleLogStudy);
+
+    // --- Modales (Añadir Materia y Tema)
+    showAddMateriaBtn.addEventListener('click', () => {
+        addMateriaModal.style.display = 'flex';
+    });
     
-    // --- ¡ARREGLO DEL BUG DEL BOTÓN! ---
+    showAddTemaBtn.addEventListener('click', () => {
+        addTemaModal.style.display = 'flex';
+    });
+
+    // ¡NUEVO! Listeners para el Modal de Jefes
+    showAddJefeBtn.addEventListener('click', () => {
+        addJefeModal.style.display = 'flex';
+    });
+    saveJefeBtn.addEventListener('click', handleSaveJefe);
+
+    // --- Navegación de Temas (Botón "Atrás")
+    backToMateriasBtn.addEventListener('click', () => {
+        showPage('page-skills'); // La función que ya arreglamos :)
+    });
+    
+    // --- Modales
     closeButtons.forEach(button => { button.addEventListener('click', (e) => e.target.closest('.modal').style.display = 'none'); });
     mainCloseButtons.forEach(button => { button.addEventListener('click', (e) => e.target.closest('.modal').style.display = 'none'); });
     window.addEventListener('click', (e) => { if (e.target.classList.contains('modal')) { e.target.style.display = 'none'; } });
@@ -810,17 +1680,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Navegación
     navHomeBtn.addEventListener('click', () => { showPage('page-home'); loadHomeData(); });
     navSkillsBtn.addEventListener('click', () => { showPage('page-skills'); loadMaterias(); });
-    navProfileBtn.addEventListener('click', () => {
-        showPage('page-profile');
-        loadProfileStats(); 
+    // ¡NUEVO! Botón de Jefes
+    navJefesBtn.addEventListener('click', () => {
+        showPage('page-jefes');
+        loadJefes(); // Llama a la función que ya existe :)
     });
-    // --- Listeners de Skill Tree (Materias)
-    showAddMateriaBtn.addEventListener('click', () => addMateriaModal.style.display = 'flex');
-    saveMateriaBtn.addEventListener('click', handleSaveMateria);
-    // --- Listeners de Temas
-    backToMateriasBtn.addEventListener('click', () => { showPage('page-skills'); loadMaterias(); });
-    showAddTemaBtn.addEventListener('click', () => addTemaModal.style.display = 'flex');
-    saveTemaBtn.addEventListener('click', handleSaveTema);
+    navProfileBtn.addEventListener('click', () => { showPage('page-profile'); loadProfileStats(); });
+    // ¡NUEVO! Botón de Tienda
+    navStoreBtn.addEventListener('click', () => { showPage('page-store'); loadStore(); });
+    
+    // --- Listeners de Tienda
+    document.getElementById('confirm-buy-btn').addEventListener('click', (e) => {
+        const itemId = e.target.dataset.itemId;
+        const cost = parseInt(e.target.dataset.cost);
+        executeBuy(itemId, cost);
+    });
+
+    // ¡NUEVO! Listeners para el Modal de K.O.
+    confirmKoBtnCancel.addEventListener('click', () => {
+        confirmKoModal.style.display = 'none';
+    });
+    confirmKoBtnConfirm.addEventListener('click', executeKOBoss);
+
     // =========================================================================
     // INICIALIZACIÓN (Sin cambios)
     // =========================================================================
@@ -831,4 +1712,20 @@ document.addEventListener('DOMContentLoaded', () => {
         else { showAuth(); }
     }
     checkUserSession();
+    // =========================================================================
+    // ¡NUEVO! REGISTRAR EL SERVICE WORKER
+    // =========================================================================
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then((registration) => {
+                    console.log('¡Service Worker registrado con éxito! Alcance:', registration.scope);
+                })
+                .catch((error) => {
+                    console.error('Error al registrar el Service Worker:', error);
+                });
+        });
+    }
 });
+
+/*ESTE JS TIENE MAS LINEAS QUE ANTES*/
