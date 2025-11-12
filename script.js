@@ -130,6 +130,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const damageHitModal = document.getElementById('damage-hit-modal');
     const damageHitText = document.getElementById('damage-hit-text');
 
+    // ¡NUEVO! Página de Amigos
+    const searchUserInput = document.getElementById('search-user-input');
+    const searchUserBtn = document.getElementById('search-user-btn');
+    const searchResultsContainer = document.getElementById('search-results-container');
+    const friendRequestsContainer = document.getElementById('friend-requests-container');
+    const myFriendsContainer = document.getElementById('my-friends-container');
+
 
     // --- Navegación
     const bottomNav = document.querySelector('.bottom-nav');
@@ -151,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let localJefes = [];
     let isCrisisModeCurrentlyActive = false; // ¡Variable para el nuevo pop-up!
     let animationQueue = null; // <-- ¡AÑADE ESTA LÍNEA!
+    let localAmistades = []; // <-- ¡AÑADE ESTA LÍNEA!
 
     // --- ¡LISTA MAESTRA DE TROFEOS! (Nombres actualizados)
     const levelTitles = [ "Estudiante Novato", "Aspirante a Interno", "Residente de Anatomía", "Maestro de Fisiología", "Explorador Patológico", "Conocedor Farmacológico", "Clínico Principiante", "Médico en Formación", "Cirujano de Sillón", "Guardián del Conocimiento", "Eminencia Médica" ];
@@ -1631,7 +1639,290 @@ document.addEventListener('DOMContentLoaded', () => {
 
         saveProfileBtn.disabled = false;
     }
-    // ... (renderizado de gráficos) ...
+
+    // =========================================================================
+    // ¡NUEVO! SECCIÓN SOCIAL (AMIGOS)
+    // =========================================================================
+
+    /**
+     * ¡NUEVO! Carga la página de Amigos (Solicitudes y Amigos)
+     */
+    async function loadFriendsPage() {
+        // 1. Limpiar las listas (para mostrar "Cargando...")
+        friendRequestsContainer.innerHTML = '<p>Cargando...</p>';
+        myFriendsContainer.innerHTML = '<p>Cargando...</p>';
+        searchResultsContainer.innerHTML = ''; // Limpiar búsquedas viejas
+        searchUserInput.value = ''; // Limpiar input
+
+        // 2. Buscar todas las 'amistades' donde yo esté involucrado
+        const { data, error } = await supabase
+            .from('amistades')
+            .select(`
+                id,
+                status,
+                usuario_1_id ( id, username, level, avatar_url ),
+                usuario_2_id ( id, username, level, avatar_url )
+            `)
+            .or(`usuario_1_id.eq.${player.id},usuario_2_id.eq.${player.id}`);
+            // .eq('status', 'pendiente'); // <- ¡Error!
+
+        if (error) {
+            console.error("Error cargando amistades:", error);
+            friendRequestsContainer.innerHTML = '<p>Error al cargar solicitudes.</p>';
+            myFriendsContainer.innerHTML = '<p>Error al cargar amigos.</p>';
+            return;
+        }
+
+        localAmistades = data || [];
+
+        // 3. Separar las listas
+        const solicitudesPendientes = [];
+        const amigosAceptados = [];
+
+        localAmistades.forEach(amistad => {
+            if (amistad.status === 'pendiente') {
+                // Si yo soy el receptor (usuario_2), es una solicitud para mí
+                if (amistad.usuario_2_id.id === player.id) {
+                    solicitudesPendientes.push(amistad);
+                }
+                // (Si yo soy usuario_1, es una solicitud "enviada" que no mostramos aquí)
+            
+            } else if (amistad.status === 'aceptada') {
+                amigosAceptados.push(amistad);
+            }
+        });
+
+        // 4. Renderizar las listas
+        renderFriendRequests(solicitudesPendientes);
+        renderMyFriends(amigosAceptados);
+    }
+
+    /**
+     * ¡NUEVO! Dibuja las tarjetas de Solicitudes Pendientes
+     */
+    function renderFriendRequests(solicitudes) {
+        if (solicitudes.length === 0) {
+            friendRequestsContainer.innerHTML = '<p style="color: #888;">No tienes solicitudes pendientes.</p>';
+            return;
+        }
+
+        friendRequestsContainer.innerHTML = ''; // Limpiar
+        solicitudes.forEach(solicitud => {
+            // El perfil del "amigo" es quien la envió (usuario_1)
+            const profile = solicitud.usuario_1_id; 
+            
+            const card = document.createElement('div');
+            card.className = 'user-card';
+            card.innerHTML = `
+                ${renderUserCardInfo(profile)}
+                <div class="user-actions">
+                    <button class="btn-friend btn-friend-accept" data-id="${solicitud.id}">Aceptar</button>
+                    <button class="btn-friend btn-friend-reject" data-id="${solicitud.id}">Rechazar</button>
+                </div>
+            `;
+            
+            // Añadir listeners a los botones
+            card.querySelector('.btn-friend-accept').addEventListener('click', handleAcceptFriend);
+            card.querySelector('.btn-friend-reject').addEventListener('click', handleRejectFriend);
+
+            friendRequestsContainer.appendChild(card);
+        });
+    }
+
+    /**
+     * ¡NUEVO! Dibuja las tarjetas de Amigos Aceptados
+     */
+    function renderMyFriends(amigos) {
+        if (amigos.length === 0) {
+            myFriendsContainer.innerHTML = '<p style="color: #888;">¡Busca un amigo para empezar!</p>';
+            return;
+        }
+
+        myFriendsContainer.innerHTML = ''; // Limpiar
+        amigos.forEach(amistad => {
+            // El perfil de mi amigo es el que NO soy yo
+            const profile = (amistad.usuario_1_id.id === player.id)
+                ? amistad.usuario_2_id // Si yo soy usuario 1, mi amigo es usuario 2
+                : amistad.usuario_1_id; // Si yo soy usuario 2, mi amigo es usuario 1
+                
+            const card = document.createElement('div');
+            card.className = 'user-card';
+            card.innerHTML = `
+                ${renderUserCardInfo(profile)}
+                <div class="user-actions">
+                    <button class="btn-friend btn-friend-reject" data-id="${amistad.id}">Eliminar</button>
+                </div>
+            `;
+            
+            // Añadir listener al botón
+            card.querySelector('.btn-friend-reject').addEventListener('click', handleRejectFriend);
+
+            myFriendsContainer.appendChild(card);
+        });
+    }
+
+    /**
+     * ¡NUEVO! Helper para dibujar la parte izquierda de la tarjeta de usuario
+     */
+    function renderUserCardInfo(profile) {
+        // Usamos el ícono 🧠 si no hay avatar
+        const avatarImg = profile.avatar_url
+            ? `<img src="${profile.avatar_url}" alt="Avatar">`
+            : '🧠';
+        
+        return `
+            <div class="user-info">
+                <div class="user-avatar">
+                    ${avatarImg}
+                </div>
+                <div class="user-details">
+                    <span class="user-name">${profile.username}</span>
+                    <span class="user-level">Nivel ${profile.level || 1}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * ¡NUEVO! Busca usuarios por 'username'
+     */
+    async function handleSearchUsers() {
+        const searchTerm = searchUserInput.value.trim().toLowerCase();
+        if (searchTerm.length < 3) {
+            searchResultsContainer.innerHTML = '<p style="color: #d9534f;">Escribe al menos 3 caracteres.</p>';
+            return;
+        }
+        
+        searchResultsContainer.innerHTML = '<p>Buscando...</p>';
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, username, level, avatar_url')
+            .ilike('username', `%${searchTerm}%`) // 'ilike' no es sensible a mayúsculas
+            .neq('id', player.id) // No buscarme a mí mismo
+            .limit(10); // Limitar a 10 resultados
+
+        if (error) {
+            console.error("Error buscando usuarios:", error);
+            searchResultsContainer.innerHTML = '<p>Error al buscar.</p>';
+            return;
+        }
+
+        renderSearchResults(data);
+    }
+
+    /**
+     * ¡NUEVO! Dibuja los resultados de la búsqueda
+     */
+    function renderSearchResults(users) {
+        if (users.length === 0) {
+            searchResultsContainer.innerHTML = '<p style="color: #888;">No se encontraron usuarios.</p>';
+            return;
+        }
+        
+        searchResultsContainer.innerHTML = ''; // Limpiar
+        users.forEach(profile => {
+            const card = document.createElement('div');
+            card.className = 'user-card';
+
+            // Revisar si ya somos amigos o hay una solicitud pendiente
+            const amistadExistente = localAmistades.find(a =>
+                (a.usuario_1_id.id === profile.id || a.usuario_2_id.id === profile.id)
+            );
+
+            let actionsHTML = '';
+            if (amistadExistente) {
+                if (amistadExistente.status === 'aceptada') {
+                    actionsHTML = '<span style="font-size: 0.9em; color: #888;">Ya son amigos</span>';
+                } else if (amistadExistente.status === 'pendiente') {
+                    actionsHTML = '<span style="font-size: 0.9em; color: #888;">Pendiente</span>';
+                }
+            } else {
+                // ¡No hay amistad! Mostrar botón de añadir
+                actionsHTML = `<button class="btn-friend btn-friend-add" data-id="${profile.id}">+ Añadir</button>`;
+            }
+
+            card.innerHTML = `
+                ${renderUserCardInfo(profile)}
+                <div class="user-actions">
+                    ${actionsHTML}
+                </div>
+            `;
+
+            // Añadir listener si el botón existe
+            if (card.querySelector('.btn-friend-add')) {
+                card.querySelector('.btn-friend-add').addEventListener('click', handleAddFriend);
+            }
+
+            searchResultsContainer.appendChild(card);
+        });
+    }
+
+    /**
+     * ¡NUEVO! Envía una solicitud de amistad (INSERT)
+     */
+    async function handleAddFriend(event) {
+        const friendId = event.target.dataset.id;
+        event.target.disabled = true; // Desactivar botón
+        event.target.textContent = 'Enviando...';
+
+        const { error } = await supabase
+            .from('amistades')
+            .insert({
+                usuario_1_id: player.id, // Yo envío
+                usuario_2_id: friendId,  // Él recibe
+                status: 'pendiente'
+            });
+
+        if (error) {
+            console.error("Error al añadir amigo:", error);
+            event.target.textContent = 'Error';
+        } else {
+            event.target.textContent = 'Enviado';
+            // Recargar la página de amigos para actualizar las listas
+            await loadFriendsPage();
+        }
+    }
+
+    /**
+     * ¡NUEVO! Acepta una solicitud (UPDATE)
+     */
+    async function handleAcceptFriend(event) {
+        const amistadId = event.target.dataset.id;
+        event.target.disabled = true;
+
+        const { error } = await supabase
+            .from('amistades')
+            .update({ status: 'aceptada' })
+            .eq('id', amistadId);
+        
+        if (error) {
+            console.error("Error al aceptar solicitud:", error);
+        } else {
+            // Recargar todo para que aparezca en la lista de "Mis Amigos"
+            await loadFriendsPage();
+        }
+    }
+
+    /**
+     * ¡NUEVO! Rechaza una solicitud O elimina un amigo (DELETE)
+     */
+    async function handleRejectFriend(event) {
+        const amistadId = event.target.dataset.id;
+        event.target.disabled = true;
+
+        const { error } = await supabase
+            .from('amistades')
+            .delete()
+            .eq('id', amistadId);
+
+        if (error) {
+            console.error("Error al rechazar/eliminar:", error);
+        } else {
+            // Recargar todo para que desaparezca de la lista
+            await loadFriendsPage();
+        }
+    }
 
     // =========================================================================
     // FUNCIONES DE UI (RENDERIZADO)
@@ -1745,6 +2036,13 @@ document.addEventListener('DOMContentLoaded', () => {
         showPage('page-jefes');
         loadJefes(); // Llama a la función que ya existe :)
     });
+
+    // ¡NUEVO! Botón de Amigos
+    navFriendsBtn.addEventListener('click', () => {
+        showPage('page-friends');
+        loadFriendsPage();
+    });
+
     navProfileBtn.addEventListener('click', () => { showPage('page-profile'); loadProfileStats(); });
     // ¡NUEVO! Botón de Tienda
     navStoreBtn.addEventListener('click', () => { showPage('page-store'); loadStore(); });
@@ -1764,6 +2062,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ¡NUEVO! Listener de Guardar Perfil
     saveProfileBtn.addEventListener('click', handleSaveProfile);
+
+    // ¡NUEVO! Listener de Búsqueda de Amigos
+    searchUserBtn.addEventListener('click', handleSearchUsers);
 
     // =========================================================================
     // INICIALIZACIÓN (Sin cambios)
