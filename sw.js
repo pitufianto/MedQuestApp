@@ -1,5 +1,5 @@
 // Lista de archivos para guardar en caché
-const CACHE_NAME = 'medquest-v3'; // <-- ¡Cambiado a v3!
+const CACHE_NAME = 'medquest-v4'; // <-- ¡Cambiado a v4!
 const urlsToCache = [
     '/',
     'index.html',
@@ -25,17 +25,22 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// Evento de Fetch: Responde desde el caché (offline-first)
+// Evento de Fetch: Intenta ir a la red primero (Network-First)
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                // Si está en caché, lo devuelve
-                if (response) {
-                    return response;
-                }
-                // Si no, va a internet
-                return fetch(event.request);
+        fetch(event.request)
+            .then((networkResponse) => {
+                // ¡Éxito! Lo obtuvimos de internet.
+                // Ahora, guardémoslo en la caché para la próxima vez (modo offline)
+                return caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(event.request, networkResponse.clone());
+                    return networkResponse;
+                });
+            })
+            .catch(() => {
+                // ¡Falló Internet! El teléfono está offline.
+                // No hay problema, ahora sí, buscamos en la caché.
+                return caches.match(event.request);
             })
     );
 });
