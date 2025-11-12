@@ -143,6 +143,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const navHomeBtn = document.getElementById('nav-home');
     const navSkillsBtn = document.getElementById('nav-skills');
     const navJefesBtn = document.getElementById('nav-jefes'); // <-- ¡AÑADE ESTA LÍNEA!
+
+    const navFriendsBtn = document.getElementById('nav-friends'); // <-- ¡AÑADE ESTA LÍNEA!
+
     const navStoreBtn = document.getElementById('nav-store');
     const navProfileBtn = document.getElementById('nav-profile');
     const navButtons = document.querySelectorAll('.nav-button');
