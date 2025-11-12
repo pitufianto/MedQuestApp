@@ -694,3 +694,11 @@ body.crisis-mode-active .bottom-nav {
     background-color: #FAD1E6; /* Rosa */
     color: #333;
 }
+
+/* =========================================================================
+   FIX: ANCHO DEL INPUT DE BÚSQUEDA DE AMIGOS
+   ========================================================================= */
+
+.search-bar-container input {
+    width: auto; /* Anula el 'width: 100%' para que flex: 1 funcione */
+}
