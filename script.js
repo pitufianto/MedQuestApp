@@ -147,7 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const navFriendsBtn = document.getElementById('nav-friends'); // <-- ¡AÑADE ESTA LÍNEA!
 
     const navStoreBtn = document.getElementById('nav-store');
+    
     //const navProfileBtn = document.getElementById('nav-profile');
+    
     const navButtons = document.querySelectorAll('.nav-button');
     const pageContents = document.querySelectorAll('.page-content');
 

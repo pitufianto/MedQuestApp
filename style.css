@@ -306,29 +306,6 @@ button:active { transform: scale(0.98); }
 }
 
 /* =========================================================================
-   FIX: BARRA DE NAVEGACIÓN DE 5 BOTONES
-   ========================================================================= */
-
-/* 1. Oculta el SEGUNDO <span> (el texto) dentro de cada botón */
-.nav-button span:nth-child(2) {
-    display: none;
-}
-
-/* 2. Crece un poco el PRIMER <span> (el ícono) para que ocupe el espacio */
-.nav-button span:first-child {
-    font-size: 1.6em; /* Un poco más grande que el 1.5em original */
-    margin-bottom: 0; /* Quita el espacio que tenía para el texto */
-}
-
-/* 3. Ajusta el padding para que el ícono quede bien centrado */
-.nav-button {
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-}
-
-/* =========================================================================
    ESTILOS BOTÓN "COMPLETAR JEFE"
    ========================================================================= */
 
