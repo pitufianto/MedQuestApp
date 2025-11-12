@@ -591,20 +591,6 @@ body.crisis-mode-active .bottom-nav {
    ESTILOS PÁGINA DE AMIGOS Y NAV DE 6 BOTONES
    ========================================================================= */
 
-/* --- Arreglo para 6 Íconos --- */
-/* (Forzamos que solo se vean los íconos) */
-.nav-6-icons span:nth-child(2) {
-    display: none; /* Oculta el texto (Home, Skills, etc.) */
-}
-.nav-6-icons span:first-child {
-    font-size: 1.8em; /* Ícono más grande */
-    margin-bottom: 0;
-}
-.nav-6-icons .nav-button {
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
 /* --- Barra de Búsqueda --- */
 .search-bar-container {
     display: flex;
@@ -701,4 +687,49 @@ body.crisis-mode-active .bottom-nav {
 
 .search-bar-container input {
     width: auto; /* Anula el 'width: 100%' para que flex: 1 funcione */
+}
+
+/* =========================================================================
+   ESTILOS PERFIL "ESTILO INSTAGRAM"
+   ========================================================================= */
+
+/* 1. Arregla todos los headers para el nuevo layout */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 2. Estilo del nuevo botón de perfil en la esquina */
+.header-profile-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #EEE;
+    background-color: #FAFAFA;
+    font-size: 1.5em;
+    padding: 0;
+    line-height: 36px; /* Ajuste para centrar el emoji */
+    text-align: center;
+    overflow: hidden; /* Para la imagen de avatar */
+    cursor: pointer;
+}
+.header-profile-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 3. Arreglo especial para el header de Jefes (que tiene 3 botones) */
+#page-jefes .page-header {
+    justify-content: center; /* Mantenemos el título centrado */
+    position: relative;
+}
+#page-jefes .page-header .btn-add {
+    position: absolute; /* Botón + a la derecha */
+    right: 50px; /* Deja espacio para el nuevo botón de perfil */
+}
+#page-jefes .page-header .header-profile-btn {
+    position: absolute; /* Botón perfil a la extrema derecha */
+    right: 0;
 }

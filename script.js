@@ -147,9 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const navFriendsBtn = document.getElementById('nav-friends'); // <-- ¡AÑADE ESTA LÍNEA!
 
     const navStoreBtn = document.getElementById('nav-store');
-    const navProfileBtn = document.getElementById('nav-profile');
+    //const navProfileBtn = document.getElementById('nav-profile');
     const navButtons = document.querySelectorAll('.nav-button');
     const pageContents = document.querySelectorAll('.page-content');
+
+    const headerProfileButtons = document.querySelectorAll('.header-profile-btn');
 
     // --- Estado del Jugador (Datos locales)
     let player = { id: null, level: 1, xp: 0, xp_to_next_level: 100, sinapsis: 0, sinapsis_progress: 0 }; // ¡AÑADIDO SINAPSIS!
@@ -246,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else { 
             // Si el perfil ya existe, actualiza las variables locales (incluyendo sinapsis)
             player = profile; 
+            updateHeaderIcons(); // <-- ¡AÑADE ESTA LÍNEA!
         }
 
         const { data: trophies, error: trophiesError } = await supabase.from('trophies_unlocked').select('*').eq('user_id', userId);
@@ -1599,6 +1602,21 @@ document.addEventListener('DOMContentLoaded', () => {
         await checkStatsBadges(allLogs, currentStreak);
     }
 
+
+    /**
+     * ¡NUEVO! Actualiza todos los íconos de perfil en los headers
+     */
+    function updateHeaderIcons() {
+        const avatarUrl = player.avatar_url;
+        const avatarHTML = avatarUrl
+            ? `<img src="${avatarUrl}" alt="Avatar">`
+            : '🧠'; // Emoji de cerebro si no hay avatar
+
+        headerProfileButtons.forEach(button => {
+            button.innerHTML = avatarHTML;
+        });
+    }
+
     /**
      * ¡NUEVO! Guarda el username y avatar en la tabla 'profiles'
      */
@@ -1638,6 +1656,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Actualizamos nuestro 'player' local
             player.username = data.username; 
             player.avatar_url = data.avatar_url;
+            updateHeaderIcons(); // <-- ¡AÑADE ESTA LÍNEA!
         }
 
         saveProfileBtn.disabled = false;
@@ -2046,7 +2065,15 @@ document.addEventListener('DOMContentLoaded', () => {
         loadFriendsPage();
     });
 
-    navProfileBtn.addEventListener('click', () => { showPage('page-profile'); loadProfileStats(); });
+    //navProfileBtn.addEventListener('click', () => { showPage('page-profile'); loadProfileStats(); });
+
+    // ¡NUEVO! Listener para TODOS los botones de perfil en el header
+    headerProfileButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            showPage('page-profile');
+            loadProfileStats();
+        });
+    });
     // ¡NUEVO! Botón de Tienda
     navStoreBtn.addEventListener('click', () => { showPage('page-store'); loadStore(); });
     
