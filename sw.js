@@ -27,11 +27,16 @@ self.addEventListener('install', (event) => {
 
 // Evento de Fetch: Intenta ir a la red primero (Network-First)
 self.addEventListener('fetch', (event) => {
+    // ¡NUEVO! Solo nos importan las solicitudes GET
+    if (event.request.method !== 'GET') {
+        return;
+    }
+
     event.respondWith(
         fetch(event.request)
             .then((networkResponse) => {
                 // ¡Éxito! Lo obtuvimos de internet.
-                // Ahora, guardémoslo en la caché para la próxima vez (modo offline)
+                // Ahora, guardémoslo en la caché para la próxima vez
                 return caches.open(CACHE_NAME).then((cache) => {
                     cache.put(event.request, networkResponse.clone());
                     return networkResponse;
